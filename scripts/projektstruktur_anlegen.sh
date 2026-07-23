@@ -22,8 +22,29 @@ echo "$PROJECT"
 
 mkdir -p "$PROJECT/ausgangsmaterial"
 
-touch "$PROJECT/ausgangsmaterial/pacman-master.zip"
-touch "$PROJECT/ausgangsmaterial/docker.zip"
+PACMAN_ZIP="$PROJECT/ausgangsmaterial/pacman-master.zip"
+DOCKER_ZIP="$PROJECT/ausgangsmaterial/docker.zip"
+
+if [[ ! -f "$PACMAN_ZIP" ]]; then
+    echo "❌ Datei fehlt: pacman-master.zip"
+    echo "Bitte Originaldatei nach:"
+    echo "$PROJECT/ausgangsmaterial/"
+    exit 1
+fi
+
+if [[ ! -f "$DOCKER_ZIP" ]]; then
+    echo "❌ Datei fehlt: docker.zip"
+    echo "Bitte Originaldatei nach:"
+    echo "$PROJECT/ausgangsmaterial/"
+    exit 1
+fi
+
+echo "Erzeuge SHA256-Prüfsummen..."
+
+sha256sum "$PACMAN_ZIP" > "$PROJECT/ausgangsmaterial/pacman-master.sha256"
+sha256sum "$DOCKER_ZIP" > "$PROJECT/ausgangsmaterial/docker.sha256"
+
+echo "✔ Prüfsummen erstellt."
 
 #############################
 # pacman-app
