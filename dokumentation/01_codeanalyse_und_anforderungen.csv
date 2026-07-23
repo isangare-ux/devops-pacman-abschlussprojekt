@@ -1,0 +1,56 @@
+Anwendungsanalyse
+
+Technologie:
+Node.js + Express
+
+Start:
+npm start
+
+Port:
+8080
+
+Datenbank:
+MongoDB
+
+Architektur:
+Webanwendung mit REST-Routen
+------------------------------
+4. Deine Dokumentation könnte danach so aussehen
+
+01_codeanalyse_und_anforderungen.csv
+
+Beispiel:
+
+Bereich	Ergebnis
+Anwendung	Pacman Arcade Game
+Technologie	Node.js / Express
+Start	npm start
+Port	8080
+Datenbank	MongoDB
+Frontend	Views / Public
+Backend	Express Routes
+Containerisierung	Docker
+Deployment Ziel	Kubernetes
+---------------------------
+Ergebnis für deine Dokumentation
+
+Deine Datei:
+
+dokumentation/
+└── 01_codeanalyse_und_anforderungen.csv
+
+kann jetzt erweitert werden:
+
+Kategorie	Analyseergebnis
+Anwendung	Pac-Man Node.js Game
+Technologie	Node.js + Express
+Sprache	JavaScript
+Einstiegspunkt	bin/server.js
+Startkommando	npm start
+Entwicklung	npm run dev
+Test	npm test
+Template Engine	Jade
+Datenbank	MongoDB
+Backend Framework	Express 4
+Container Ziel	Docker
+Deployment Ziel	Kubernetes
