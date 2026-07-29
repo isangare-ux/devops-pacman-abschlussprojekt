@@ -1,0 +1,83 @@
+================================================================
+Docker Build Nachweis – Pacman Anwendung
+================================================================
+
+Projekt : DevOps Pacman Abschlussprojekt
+Datum   : 29.07.2026
+
+
+----------------------------------------------------------------
+1. Docker Image Erstellung
+----------------------------------------------------------------
+
+Build-Befehl:
+    docker build -t pacman-app:v1.0 .
+
+Ergebnis:
+    Docker Image erfolgreich erstellt.
+
+
+----------------------------------------------------------------
+2. Image Informationen
+----------------------------------------------------------------
+
+    Image Name  : pacman-app
+    Image Tag   : v1.0
+    Image Größe : 76.4 MB
+
+
+----------------------------------------------------------------
+3. Container Konfiguration
+----------------------------------------------------------------
+
+    Container Name : pacman-test
+    Startbefehl    : npm start
+    Port           : 8080
+    Benutzer       : node (nicht privilegierter Benutzer)
+
+Ausgeführter Prozess:
+
+    npm start
+        |
+        v
+    node .
+        |
+        v
+    bin/server.js
+        |
+        v
+    Express Server
+
+
+----------------------------------------------------------------
+4. Container Test
+----------------------------------------------------------------
+
+Start:
+    docker run -d --name pacman-test -p 8080:8080 pacman-app:v1.0
+
+Statusprüfung:
+    docker ps
+
+Ergebnis:
+    Container läuft erfolgreich.
+
+HTTP-Test:
+    curl -I http://localhost:8080
+
+Ergebnis:
+    HTTP/1.1 200 OK
+
+
+----------------------------------------------------------------
+5. Hinweis
+----------------------------------------------------------------
+
+Beim ersten Test wurde festgestellt, dass die Anwendung eine
+externe MongoDB-Verbindung benötigt.
+
+Fehler:
+    mongodb://localhost:27017/pacman
+
+Die MongoDB-Bereitstellung wird im nächsten Schritt über
+Docker Compose bzw. Kubernetes berücksichtigt.
