@@ -1,0 +1,65 @@
+name: pacman-app
+services:
+  mongodb:
+    container_name: mongodb
+    expose:
+      - "27017"
+    healthcheck:
+      test:
+        - CMD
+        - mongo
+        - --eval
+        - db.adminCommand('ping')
+      timeout: 10s
+      interval: 30s
+      retries: 5
+      start_period: 30s
+    image: mongo:4.4.30-focal
+    networks:
+      pacman-network: null
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: mongodb-data
+        target: /data/db
+        volume: {}
+  pacman:
+    build:
+      context: /home/ibras/projects/devops-pacman-abschlussprojekt/pacman-app
+      dockerfile: Dockerfile
+    container_name: pacman
+    depends_on:
+      mongodb:
+        condition: service_started
+        required: true
+    environment:
+      MONGO_DATABASE: pacman
+      MONGO_SERVICE_HOST: mongodb
+      MY_MONGO_PORT: "27017"
+      PORT: "8080"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8080
+      timeout: 10s
+      interval: 30s
+      retries: 5
+      start_period: 30s
+    image: pacman-app:v1.0
+    networks:
+      pacman-network: null
+    ports:
+      - mode: ingress
+        target: 8080
+        published: "8080"
+        protocol: tcp
+    restart: unless-stopped
+networks:
+  pacman-network:
+    name: pacman-app_pacman-network
+    driver: bridge
+volumes:
+  mongodb-data:
+    name: mongodb-data
