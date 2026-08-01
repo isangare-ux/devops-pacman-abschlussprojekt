@@ -1,0 +1,9 @@
+﻿Schritt,Aufgabe,Beschreibung,Status,Nachweis
+CS01,compose.yaml erstellen,Definition der Multi-Container-Umgebung mit Pacman-Anwendung und MongoDB-Service,erledigt,compose.yaml
+CS02,Pacman-Service konfigurieren,"Build, Image, Port, Umgebungsvariablen und Startkonfiguration der Anwendung",erledigt,Service pacman
+CS03,MongoDB-Service konfigurieren,"MongoDB-Image, Volume, Datenbankkonfiguration und Healthcheck einrichten",erledigt,Service mongodb
+CS04,Docker-Netzwerk definieren,Bridge-Netzwerk für die Kommunikation zwischen den Containern konfigurieren,erledigt,pacman-network
+CS05,Persistentes Volume konfigurieren,Named Volume mongodb-data für dauerhafte Datenhaltung erstellen,erledigt,Volume mongodb-data
+CS06,Stack starten,Start der Multi-Container-Umgebung mit docker compose up -d,erledigt,docker compose up -d
+CS07,Smoke-Test durchführen,Prüfung der Anwendungserreichbarkeit und Datenbankfunktion,erledigt,curl -I http://localhost:8080 → HTTP 200 OK
+CS08,Compose-Konfiguration validieren,Überprüfung der YAML-Konfiguration ohne Geheimnisse,erledigt,docker compose config
