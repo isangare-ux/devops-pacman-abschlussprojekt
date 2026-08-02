@@ -1,0 +1,288 @@
+==========================================================
+CI Workflow Nachweis - Pacman Anwendung
+AP13: GitHub Actions CI Workflow
+==========================================================
+
+Projekt:
+Pacman Application
+
+Workflow:
+.github/workflows/ci.yml
+
+Ziel:
+Automatisierung der Qualitätssicherung durch eine CI-Pipeline
+mit GitHub Actions.
+
+==========================================================
+1. Workflow Trigger
+==========================================================
+
+Der CI-Workflow wird automatisch bei folgenden Ereignissen
+gestartet:
+
+- Push auf:
+  - main
+  - develop
+  - feature/*
+
+- Pull Request gegen:
+  - main
+
+Dadurch werden Änderungen vor dem Zusammenführen automatisch
+geprüft.
+
+
+==========================================================
+2. Berechtigungen
+==========================================================
+
+Der Workflow verwendet minimale Berechtigungen:
+
+contents: read
+
+Beschreibung:
+Der Runner darf den Repository-Inhalt lesen und auschecken.
+
+packages: write
+
+Beschreibung:
+Erlaubt das Veröffentlichen von Docker Images in der
+GitHub Container Registry (GHCR).
+
+
+==========================================================
+3. Build and Test Job
+==========================================================
+
+Runner:
+ubuntu-latest
+
+
+Durchgeführte Schritte:
+
+1. Repository Checkout
+
+Action:
+actions/checkout@v4
+
+Ergebnis:
+Quellcode wird in der GitHub Actions Umgebung bereitgestellt.
+
+
+2. Node.js Einrichtung
+
+Action:
+actions/setup-node@v4
+
+Version:
+Node.js 22
+
+
+3. Installation Abhängigkeiten
+
+Befehl:
+
+npm ci
+
+Ergebnis:
+Dependencies werden reproduzierbar anhand package-lock.json
+installiert.
+
+
+4. Anwendungstest
+
+Befehl:
+
+npm test
+
+Ergebnis:
+Automatisierte Prüfung der Anwendung.
+
+
+==========================================================
+4. Docker Compose Integrationstest
+==========================================================
+
+Die CI-Pipeline startet die komplette Integrationsumgebung:
+
+Services:
+
+- pacman
+  Node.js / Express Anwendung
+
+- mongodb
+  MongoDB Datenbank
+
+
+Validierung:
+
+docker compose config
+
+
+Start:
+
+docker compose up -d
+
+
+Healthcheck:
+
+Die Pipeline wartet, bis beide Services den Status
+healthy erreicht haben.
+
+
+==========================================================
+5. Smoke-Test
+==========================================================
+
+Nach erfolgreichem Start wird ein automatisierter Smoke-Test
+ausgeführt.
+
+Prüfungen:
+
+- HTTP-Erreichbarkeit der Anwendung
+
+Beispiel:
+
+curl -f http://localhost:8080
+
+
+- Schreiben eines Testdatensatzes in MongoDB
+
+- Lesen und Validieren des gespeicherten Datensatzes
+
+
+Ergebnis:
+
+Die Kommunikation zwischen Pacman Anwendung und MongoDB
+wird erfolgreich geprüft.
+
+
+==========================================================
+6. Testlogs als Artefakt
+==========================================================
+
+Die Testergebnisse werden als GitHub Actions Artifact
+gespeichert.
+
+Artefakt:
+
+test-logs.zip
+
+
+Zweck:
+
+Nachvollziehbarkeit der Testergebnisse und Fehleranalyse.
+
+
+==========================================================
+7. Docker Image Build
+==========================================================
+
+Die Pipeline erstellt ein Docker Image:
+
+Build Tool:
+
+Docker Buildx
+
+
+Ergebnis:
+
+Erfolgreich erzeugtes Container Image.
+
+
+==========================================================
+8. Veröffentlichung nach GHCR
+==========================================================
+
+Authentifizierung:
+
+docker/login-action@v3
+
+
+Registry:
+
+GitHub Container Registry
+
+
+Berechtigung:
+
+packages: write
+
+
+Ergebnis:
+
+Docker Image wird automatisch in GHCR veröffentlicht.
+
+
+==========================================================
+9. Dokumentierte Fehlerfälle
+==========================================================
+
+Fehlerfall 1:
+npm Test Fehler
+
+Ursache:
+exit(1) bzw. fehlerhafte Test-Syntax
+
+Ergebnis:
+CI Pipeline schlägt fehl.
+
+
+----------------------------------------------------------
+
+Fehlerfall 2:
+Docker Compose Port Fehler
+
+Ursache:
+
+Falsches Port Mapping:
+
+8080:8090
+
+
+Ergebnis:
+
+Smoke-Test kann Anwendung nicht erreichen.
+
+
+----------------------------------------------------------
+
+Fehlerfall 3:
+MongoDB Image Fehler
+
+Ursache:
+
+Ungültiges Image:
+
+mongo:999.999
+
+
+Ergebnis:
+
+Docker Compose Start schlägt fehl.
+
+
+==========================================================
+10. Zusammenfassung
+==========================================================
+
+Durch den GitHub Actions Workflow wurde eine automatisierte
+CI-Pipeline für die Pacman Anwendung umgesetzt.
+
+Die Pipeline überprüft:
+
+- Quellcode
+- Dependencies
+- Anwendungstests
+- Docker Compose Umgebung
+- Healthchecks
+- Smoke-Tests
+- Docker Image Erstellung
+- Veröffentlichung in GHCR
+
+Damit wird eine reproduzierbare und automatisierte
+Qualitätssicherung der Anwendung gewährleistet.
+
+==========================================================
+Ende CI Workflow Nachweis
+==========================================================
