@@ -1,0 +1,19 @@
+Load-Test Pacman Anwendung
+
+Testwerkzeug:
+Apache Benchmark (ab)
+
+Testparameter:
+Requests: 1000
+Parallel Clients: 20
+
+Testziel:
+Überprüfung der Stabilität der Anwendung unter paralleler HTTP-Last.
+
+Testausführung:
+./tests/load-test.sh
+
+Ergebnis:
+Der Load-Test wurde erfolgreich durchgeführt.
+Es wurden keine fehlerhaften HTTP-Anfragen festgestellt.
+Die Anwendung blieb während der Belastung erreichbar.
