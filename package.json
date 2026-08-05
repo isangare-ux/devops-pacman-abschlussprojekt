@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "axios": "^1.19.0",
+    "jest": "^30.4.2"
+  }
+}
