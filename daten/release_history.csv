@@ -1,0 +1,3 @@
+Release_ID,Datum,Commit_SHA,Image_Tag,Image_Digest,Workflow_Run,SBOM,Scan_Ergebnis,Bemerkung
+v1.0.0,2026-08-04,e7c1216b2be3fc0549057c3e2cbf490f73d2b508,pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508,sha256:c48904f298c583d156c59fc858207f3d54480d8bb6c1025a4a23d391d77ad1af,Release Workflow #14,Nicht erzeugt,Keine CRITICAL/HIGH CVEs gefunden,Erstes GHCR Release der Pacman-Anwendung
+v1.0.0,2026-08-04,e7c1216b2be3fc0549057c3e2cbf490f73d2b508,pacman-app:v1.0.0,sha256:c48904f298c583d156c59fc858207f3d54480d8bb6c1025a4a23d391d77ad1af,Release Workflow #14,Nicht erzeugt,Trivy Security Scan erfolgreich,Release Image nach GitHub Container Registry veröffentlicht

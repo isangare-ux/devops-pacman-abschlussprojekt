@@ -1,0 +1,301 @@
+==================================================
+AP14 - Release Workflow und GitHub Container Registry
+Nachweis
+==================================================
+
+
+==================================================
+1. Release Workflow
+==================================================
+
+Workflow:
+GitHub Actions Release Workflow
+
+Datei:
+.pacman-app/.github/workflows/release.yml
+
+
+Trigger:
+
+Der Release Workflow wird nach einem erfolgreichen
+Push auf den Branch main ausgeführt.
+
+Zusätzlich ist ein manueller Start über
+workflow_dispatch möglich.
+
+
+Berechtigungen:
+
+permissions:
+
+contents: read
+packages: write
+
+
+Die Berechtigungen folgen dem Least-Privilege-Prinzip.
+Der Workflow erhält nur die benötigten Rechte für das
+Lesen des Repositorys und das Veröffentlichen von
+Container Images in der GitHub Container Registry.
+
+
+
+==================================================
+2. Docker Image Build
+==================================================
+
+Das Docker Image der Pacman-Anwendung wird innerhalb
+des Release Workflows automatisch erstellt.
+
+Build-Befehl:
+
+docker build \
+-t pacman-app:${GITHUB_SHA} .
+
+
+Der Commit-SHA wird als unveränderlicher Image-Tag
+verwendet.
+
+Dadurch bleibt jede veröffentlichte Image-Version
+eindeutig nachvollziehbar.
+
+
+Beispiel:
+
+Image Tag:
+
+e7c1216b2be3fc0549057c3e2cbf490f73d2b508
+
+
+
+==================================================
+3. Veröffentlichung nach GHCR
+==================================================
+
+Registry:
+
+GitHub Container Registry (GHCR)
+
+
+Image:
+
+ghcr.io/isangare-ux/pacman-app/pacman-app:<tag>
+
+
+Authentifizierung:
+
+docker/login-action@v3
+
+
+Verwendetes Token:
+
+GITHUB_TOKEN
+
+
+Das Token wird automatisch durch GitHub Actions
+bereitgestellt.
+
+Ein persönlicher Zugriffstoken (PAT) ist für die
+Veröffentlichung nicht erforderlich.
+
+
+
+==================================================
+4. Image Pull aus GHCR
+==================================================
+
+Das veröffentlichte Image wurde anschließend aus der
+GitHub Container Registry geladen.
+
+
+Befehl:
+
+docker pull \
+ghcr.io/isangare-ux/pacman-app/pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508
+
+
+Ergebnis:
+
+Das Image wurde erfolgreich heruntergeladen.
+
+
+Digest:
+
+sha256:c48904f298c583d156c59fc858207f3d54480d8bb6c1025a4a23d391d77ad1af
+
+
+
+==================================================
+5. Container Start und Smoke-Test
+==================================================
+
+Das aus GHCR geladene Image wurde lokal als Container
+gestartet.
+
+
+Beispiel:
+
+docker run -p 8081:8080 \
+ghcr.io/isangare-ux/pacman-app/pacman-app:<tag>
+
+
+Anschließend wurde die Anwendung über HTTP geprüft.
+
+
+Smoke-Test:
+
+curl http://localhost:8081
+
+
+Ergebnis:
+
+Die Pacman-Anwendung wurde erfolgreich geladen.
+
+Der erfolgreiche HTTP-Aufruf bestätigt, dass das aus
+GHCR geladene Container Image funktionsfähig ist.
+
+
+
+==================================================
+6. Security Analyse
+==================================================
+
+Tool:
+
+Trivy Container Security Scanner
+
+
+Analyse:
+
+CVE-Schwachstellenanalyse des veröffentlichten
+Docker Images aus der GitHub Container Registry.
+
+
+Image:
+
+ghcr.io/isangare-ux/pacman-app/pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508
+
+
+
+==================================================
+7. Ergebnis Basisimage
+==================================================
+
+Basisimage:
+
+Alpine Linux 3.24.1
+
+
+Ergebnis:
+
+Total: 0
+
+UNKNOWN: 0
+LOW: 0
+MEDIUM: 0
+HIGH: 0
+CRITICAL: 0
+
+
+Bewertung:
+
+Das verwendete Alpine-Basisimage weist keine
+bekannten Sicherheitslücken auf.
+
+
+
+==================================================
+8. Ergebnis Node.js Dependencies
+==================================================
+
+Analyse der Anwendungspakete:
+
+Node.js (node-pkg)
+
+
+Ergebnis:
+
+Total: 23
+
+UNKNOWN: 0
+LOW: 1
+MEDIUM: 10
+HIGH: 9
+CRITICAL: 3
+
+
+Gefundene Schwachstellen betreffen hauptsächlich
+veraltete Node.js-Abhängigkeiten der ursprünglichen
+Pacman-Anwendung.
+
+
+Beispiele:
+
+- bson
+  CVE-2020-7610
+  Severity: CRITICAL
+
+
+- constantinople
+  GHSA-4vmm-mhcq-4x9j
+  Severity: CRITICAL
+
+
+- tar
+  CVE-2026-59873
+  Severity: CRITICAL
+
+
+- mongodb
+  GHSA-mh5c-679w-hh4r
+  Severity: HIGH
+
+
+
+==================================================
+9. Bewertung der Schwachstellen
+==================================================
+
+Die Analyse wurde durchgeführt und die Ergebnisse
+wurden bewertet.
+
+Das Basisimage ist ohne bekannte Schwachstellen.
+
+Die gefundenen Sicherheitsprobleme befinden sich in
+den verwendeten Node.js-Abhängigkeiten.
+
+Eine Aktualisierung der betroffenen Dependencies
+wird als zukünftige Wartungsmaßnahme empfohlen.
+
+Die gefundenen Schwachstellen wurden nicht ignoriert,
+sondern dokumentiert und bewertet.
+
+
+
+==================================================
+10. Nachweise
+==================================================
+
+Screenshots:
+
+screenshots/07_ghcr_release/
+
+01_ghcr_package_overview.png
+
+02_ghcr_image_pull.png
+
+03_pacman_ghcr_container_running.png
+
+04_pacman_ghcr_smoke_test.png
+
+05_security_scan_trivy_ergebnis.png
+
+
+
+Zusätzliche Dateien:
+
+security_scan_ergebnis.txt
+
+
+==================================================
+Ende Nachweis AP14
+==================================================
