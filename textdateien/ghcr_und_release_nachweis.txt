@@ -78,7 +78,7 @@ GitHub Container Registry (GHCR)
 
 Image:
 
-ghcr.io/isangare-ux/pacman-app/pacman-app:<tag>
+ghcr.io/isangare-ux/pacman-app:<tag>
 
 
 Authentifizierung:
@@ -110,7 +110,7 @@ GitHub Container Registry geladen.
 Befehl:
 
 docker pull \
-ghcr.io/isangare-ux/pacman-app/pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508
+ghcr.io/isangare-ux/pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508
 
 
 Ergebnis:
@@ -135,7 +135,7 @@ gestartet.
 Beispiel:
 
 docker run -p 8081:8080 \
-ghcr.io/isangare-ux/pacman-app/pacman-app:<tag>
+ghcr.io/isangare-ux/pacman-app:<tag>
 
 
 Anschließend wurde die Anwendung über HTTP geprüft.
@@ -172,7 +172,7 @@ Docker Images aus der GitHub Container Registry.
 
 Image:
 
-ghcr.io/isangare-ux/pacman-app/pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508
+ghcr.io/isangare-ux/pacman-app:e7c1216b2be3fc0549057c3e2cbf490f73d2b508
 
 
 
