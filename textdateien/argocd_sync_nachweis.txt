@@ -1,0 +1,683 @@
+Argo CD Sync-Nachweis – Pacman GitOps
+=====================================
+
+Projekt: Pacman DevOps / GitOps
+Erfassungsdatum: 2026-08-13
+Erfassungszeit dieser aktualisierten Nachweisdatei: 15:57 CEST
+
+Hinweis:
+Die Uhrzeit oben ist der Zeitpunkt der Aktualisierung dieser Nachweisdatei.
+Die gezeigten Argo-CD-CLI-Ausgaben enthalten teilweise keinen eigenen
+Zeitstempel. Deshalb werden nur tatsächlich nachgewiesene Commit-IDs,
+Statuswerte und Ereignisse eingetragen. Nicht separat zeitgestempelte
+Sync-Ereignisse werden nicht mit erfundenen Uhrzeiten ergänzt.
+
+Argo-CD-Version:
+quay.io/argoproj/argocd:v3.5.0
+
+Argo-CD-Server:
+Namespace: argocd
+Deployment: argocd-server
+Rollout: successfully rolled out
+Ready/Available: 1/1
+Service-Typ: ClusterIP
+Ports: 80, 443
+
+GitOps-Grundsatz:
+- Git-Repository ist die Source of Truth.
+- Argo CD liest die Kustomize-Overlays aus pacman-gitops.
+- Dev synchronisiert automatisch mit Prune und Self-Heal.
+- Prod synchronisiert kontrolliert manuell.
+- Direkte kubectl-Deployments aus GitHub Actions werden nicht verwendet.
+
+============================================================
+UMGEBUNG: DEV
+============================================================
+
+Application:
+pacman-dev
+
+Argo-CD-Projekt:
+pacman
+
+Zielcluster:
+https://kubernetes.default.svc
+
+Ziel-Namespace:
+pacman-dev
+
+Git-Repository:
+https://github.com/isangare-ux/pacman-gitops.git
+
+Git Commit / aktuell nachgewiesene Argo-CD-Revision:
+13afa59
+
+Zusätzliche im Git-Revert-Test nachgewiesene Revision:
+844ba23
+Vollständiger Merge-Commit von PR #6:
+844ba234154a67e87ad9e74065732fca4228ff4d
+
+Zielrevision:
+main
+
+Kustomize-Pfad:
+apps/pacman/overlays/dev
+
+Sync Window:
+Sync Allowed
+
+Sync Policy:
+Automated (Prune)
+Self-Heal:
+aktiv gemäß Application-Konfiguration
+
+Sync Status – Endzustand:
+Synced to main (13afa59)
+
+Health Status – Endzustand:
+Healthy
+
+Zeitpunkt:
+Endnachweis am 2026-08-13.
+Die finale Argo-CD-Ausgabe mit Revision 13afa59 enthält keinen eigenen
+Zeitstempel; deshalb wird keine genauere Sync-Uhrzeit erfunden.
+
+Betroffene / nachgewiesene Ressourcen im Endzustand:
+- Deployment pacman
+  Status: Synced
+  Health: Healthy
+  Kubernetes Live-Check:
+  READY 1/1, UP-TO-DATE 1, AVAILABLE 1
+
+- HorizontalPodAutoscaler pacman
+  Restore-Ergebnis in Argo CD:
+  Status: Succeeded
+  Health/Action: Pruned
+  Kubernetes Live-Check:
+  "kubectl get hpa -n pacman-dev"
+  Ergebnis: "No resources found in pacman-dev namespace."
+
+- StatefulSet mongodb
+  Status: Synced
+  Health: Healthy
+
+- Service pacman
+  Status: Synced
+  Health: Healthy
+
+- Service mongodb
+  Status: Synced
+  Health: Healthy
+
+- Ingress pacman
+  Status: Synced
+  Health: Healthy
+
+- ConfigMap pacman-config
+  Status: Synced
+
+- ConfigMap mongodb-init
+  Status: Synced
+
+- LimitRange pacman-container-limits
+  Status: Synced
+
+- ResourceQuota pacman-namespace-quota
+  Status: Synced
+
+- ServiceAccount pacman
+  Status: Synced
+
+- Namespace pacman-dev
+  Status: Synced
+
+- PodDisruptionBudget pacman
+  Status: Synced
+  Health: Healthy
+  Hinweis: Das PDB ist im aktuell nachgewiesenen main-Stand noch vorhanden.
+  Die separate AP21-Korrektur für "kein PDB in Dev" war lokal vorbereitet,
+  ist in diesem Argo-CD-Endnachweis aber noch nicht als nach main ausgerollt
+  nachgewiesen.
+
+Nachgewiesene NetworkPolicies im Dev-Namespace:
+- allow-dns-prod
+- allow-ingress-to-pacman
+- allow-mongodb-from-pacman
+- allow-pacman-to-mongodb
+- default-deny-prod
+
+Hinweis:
+Die Benennung dieser Policies ist ein separater fachlicher Punkt aus dem
+Netzwerk-Arbeitspaket. Für AP22 ist hier entscheidend, dass Argo CD den
+Git-Sollzustand verwaltet und synchronisiert.
+
+------------------------------------------------------------
+DEV – KONTROLLIERTER DRIFT-TEST
+------------------------------------------------------------
+
+Ausgangszustand:
+- pacman-dev Synced / Healthy
+- Deployment pacman mit 1 Replik
+
+Kontrolliert erzeugter Drift:
+kubectl scale deployment pacman -n pacman-dev --replicas=2
+
+Wichtig:
+Dieser kubectl-Befehl wurde ausschließlich als kontrollierter AP22-Drift-Test
+verwendet und nicht als reguläres Deploymentverfahren.
+
+Beobachtung:
+Mit einem Watch auf die Argo-CD-Application wurde folgende Statusfolge
+sichtbar:
+
+Synced / Healthy
+-> OutOfSync / Progressing
+-> Synced / Healthy
+
+Bewertung:
+Argo CD erkannte die manuelle Abweichung und stellte den Git-Sollzustand
+durch Self-Heal automatisch wieder her.
+
+Wiederherstellungsweg Drift:
+Automatisch durch Argo CD Self-Heal.
+
+Endzustand Drift-Test:
+- Application wieder Synced
+- Health wieder Healthy
+- Deployment pacman wieder 1/1
+
+Ergebnis Drift-Test:
+ERFOLGREICH.
+
+------------------------------------------------------------
+DEV – GIT-REVERT / ROLLBACK-NACHWEIS
+------------------------------------------------------------
+
+Ausgangscommit für den kontrollierten Revert:
+022b614
+Commit-Nachricht:
+fix: HPA-Delete-Patch im Dev-Overlay einbinden
+
+Der Commit änderte ausschließlich:
+apps/pacman/overlays/dev/kustomization.yaml
+
+Kontrollierter Revert-Commit im Testbranch:
+1bd31df
+Commit-Nachricht:
+revert: HPA-Delete-Patch für GitOps-Test zurücknehmen
+
+Testbranch:
+test/ap22-git-revert
+
+Pull Request:
+PR #6
+Titel:
+test: Git-Revert für Argo-CD-Wiederherstellung prüfen
+
+Merge-Commit:
+844ba234154a67e87ad9e74065732fca4228ff4d
+
+Nach dem Merge erkannte Argo CD:
+Sync Status: Synced to main (844ba23)
+Health Status: Healthy
+
+Technische Wirkung:
+- Der HPA wurde in pacman-dev wieder gerendert.
+- HPA-Werte:
+  minReplicas: 3
+  maxReplicas: 6
+  averageUtilization: 60
+
+Wiederherstellung des korrekten Dev-Zustands:
+- Revert des Reverts in separatem Restore-Branch
+- Pull Request #7
+- Merge nach main
+- finale Argo-CD-Revision: 13afa59
+- Argo CD Auto-Sync + Prune
+
+Finale Wirkung:
+- HPA pacman in pacman-dev: Succeeded / Pruned
+- kubectl get hpa -n pacman-dev:
+  No resources found in pacman-dev namespace.
+- Deployment pacman:
+  1/1 Ready
+- Sync Status:
+  Synced to main (13afa59)
+- Health Status:
+  Healthy
+
+Wiederherstellungsweg Git-Revert:
+Git Revert
+-> Feature-/Testbranch
+-> Pull Request
+-> Merge nach main
+-> Argo CD Auto-Sync
+-> Prune / Wiederherstellung des Git-Sollzustands
+
+Ergebnis Git-Revert / Restore:
+ERFOLGREICH.
+
+------------------------------------------------------------
+DEV – DIFF UND HISTORY
+------------------------------------------------------------
+
+Diff-Nachweis:
+argocd app diff pacman-dev --core
+Exit-Code: 0
+
+Bewertung:
+Keine verbleibende Abweichung zwischen Git-Sollzustand und Cluster-Istzustand
+zum Zeitpunkt des Diff-Nachweises.
+
+History-Nachweis:
+Beispiel aus der Argo-CD-History:
+ID 14
+Datum: 2026-08-13 11:44:11 +0200 CEST
+Revision: main (5cccc00)
+
+Weitere ältere History-Einträge waren vorhanden und belegen mehrere
+Synchronisierungsstände.
+
+ERGEBNIS DEV:
+ERFOLGREICH FÜR AP22.
+
+Nachgewiesen:
+- Repository und Kustomize-Pfad
+- Zielrevision main
+- Automated Sync mit Prune
+- Self-Heal
+- Synced
+- Healthy
+- kontrollierter Drift
+- automatische Drift-Wiederherstellung
+- History
+- Diff
+- Git Revert
+- Restore über Git
+- Argo-CD-Prune
+- finaler stabiler Dev-Zustand
+
+
+============================================================
+UMGEBUNG: PROD
+============================================================
+
+Application:
+pacman-prod
+
+Argo-CD-Projekt:
+pacman
+
+Zielcluster:
+https://kubernetes.default.svc
+
+Ziel-Namespace:
+pacman-prod
+
+Git-Repository:
+https://github.com/isangare-ux/pacman-gitops.git
+
+Git Commit / zuletzt explizit verifizierte Argo-CD-Sync-Revision:
+5cccc00
+
+Vollständiger nachgewiesener Commit:
+5cccc00fb01db50cb733e0dfe48451b9a2c0b692
+
+Zielrevision:
+main
+
+Kustomize-Pfad:
+apps/pacman/overlays/prod
+
+Sync Window:
+Sync Allowed
+
+Sync Policy:
+Manual
+
+Sync Status – zuletzt explizit nachgewiesen:
+Synced to main (5cccc00)
+
+Health Status – zuletzt explizit nachgewiesen:
+Healthy
+
+Zeitpunkt:
+Nachweis am 2026-08-13 nach Merge von PR #5 und anschließendem manuellen
+Prod-Sync. Die gezeigte "argocd app get pacman-prod --core"-Ausgabe
+enthält keinen eigenen Zeitstempel; deshalb wird keine genauere Uhrzeit
+erfunden.
+
+Hinweis zur Revision:
+Nach 5cccc00 wurden über PR #6 und PR #7 ausschließlich Dev-bezogene
+Git-Revert-/Restore-Änderungen durchgeführt. Der Prod-Kustomize-Pfad wurde
+dabei nicht verändert. Ein erneuter expliziter "argocd app get pacman-prod
+--core --refresh"-Nachweis auf die spätere main-Revision 13afa59 wurde im
+gezeigten Verlauf nicht durchgeführt. Deshalb bleibt 5cccc00 die zuletzt
+explizit nachgewiesene Prod-Sync-Revision.
+
+Betroffene / nachgewiesene Ressourcen beim Prod-Sync auf 5cccc00:
+- ResourceQuota pacman-namespace-quota
+  Vor Sync: OutOfSync
+  Nach Sync: Synced / configured
+
+- LimitRange pacman-container-limits
+  Vor Sync: OutOfSync
+  Nach Sync: Synced / configured
+
+- PodDisruptionBudget pacman
+  Status: Synced
+  Health: Healthy
+
+- HorizontalPodAutoscaler pacman
+  Status: Synced
+  Health: Healthy
+
+- Deployment pacman
+  Status: Synced
+  Health: Healthy
+
+- StatefulSet mongodb
+  Status: Synced
+  Health: Healthy
+
+- Service pacman
+  Status: Synced
+  Health: Healthy
+
+- Service mongodb
+  Status: Synced
+  Health: Healthy
+
+- Ingress pacman
+  Status: Synced
+  Health: Healthy
+
+- NetworkPolicies
+  Status: Synced
+
+- ConfigMaps
+  Status: Synced
+
+- Namespace pacman-prod
+  Status: Synced
+
+Zusätzliche Kubernetes-Live-Nachweise nach AP21:
+Deployment pacman:
+READY 3/3
+UP-TO-DATE 3
+AVAILABLE 3
+
+HPA pacman:
+TARGETS: cpu: 2%/60% (später gemessener Live-Wert)
+MINPODS: 3
+MAXPODS: 6
+REPLICAS: 3
+
+ResourceQuota pacman-namespace-quota:
+persistentvolumeclaims: 1/3
+pods: 4/12
+requests.cpu: 550m/1500m
+requests.memory: 640Mi/2Gi
+limits.cpu: 2500m/6
+limits.memory: 1280Mi/3Gi
+
+LimitRange pacman-container-limits:
+CPU:
+- Min: 100m
+- Max: 2
+- Default Request: 100m
+- Default Limit: 500m
+
+Memory:
+- Min: 128Mi
+- Max: 1Gi
+- Default Request: 128Mi
+- Default Limit: 256Mi
+
+------------------------------------------------------------
+PROD – MANUELLER GITOPS-SYNC
+------------------------------------------------------------
+
+Ausgangszustand nach Merge von PR #5:
+Target: main
+Sync Policy: Manual
+Sync Status: OutOfSync from main (5cccc00)
+Health Status: Healthy
+
+Direkt als OutOfSync sichtbar:
+- ResourceQuota pacman-namespace-quota
+- LimitRange pacman-container-limits
+
+Kontrollierter Freigabeweg:
+1. Änderung auf Feature-Branch
+2. Pull Request #5
+3. Prüfung des PR-Diffs
+4. Merge nach main
+5. Argo CD erkennt neue main-Revision
+6. Prod bleibt aufgrund Manual Sync zunächst OutOfSync
+7. manueller Argo-CD-Sync auf die freigegebene Revision
+
+Verwendeter Sync-Befehl:
+argocd app sync pacman-prod --core \
+  --revision 5cccc00fb01db50cb733e0dfe48451b9a2c0b692
+
+Anschließend:
+argocd app wait pacman-prod --core --sync --health --timeout 180
+
+Endzustand:
+Sync Status: Synced to main (5cccc00)
+Health Status: Healthy
+
+Ergebnis manueller Prod-Sync:
+ERFOLGREICH.
+
+------------------------------------------------------------
+PROD – DRIFT-TEST
+------------------------------------------------------------
+
+Separater kontrollierter Drift-Test in Prod:
+NICHT DURCHGEFÜHRT.
+
+Begründung:
+Der geforderte kontrollierte Drift-Test wurde bewusst in pacman-dev
+durchgeführt, weil Dev mit Automated Sync und Self-Heal konfiguriert ist.
+Damit konnte die automatische Drift-Erkennung und Wiederherstellung
+reproduzierbar nachgewiesen werden.
+
+Prod ist bewusst auf Manual Sync konfiguriert. Ein absichtlich erzeugter
+Live-Drift in Prod würde daher nicht demselben automatischen Self-Heal-
+Verfahren entsprechen und wurde für den AP22-Nachweis nicht zusätzlich
+erzwungen.
+
+Wiederherstellungsweg Prod bei Konfigurationsfehler / gewünschtem Rollback:
+1. fehlerhafte Änderung in Git identifizieren
+2. Git Revert auf eigenem Branch
+3. Pull Request prüfen und freigeben
+4. Merge nach main
+5. Argo CD erkennt neue gewünschte Revision
+6. kontrollierter manueller Sync von pacman-prod
+7. Sync Status und Health Status prüfen
+
+Alternativ bei noch nicht synchronisierter Änderung:
+Prod nicht synchronisieren und den fehlerhaften Git-Stand zuerst über einen
+neuen Commit / Git Revert korrigieren.
+
+Ergebnis PROD:
+ERFOLGREICH FÜR DEN NACHGEWIESENEN MANUELLEN GITOPS-SYNC.
+
+Nachgewiesen:
+- getrennte Prod-Application
+- Repository und Prod-Kustomize-Pfad
+- Zielrevision main
+- Manual Sync
+- OutOfSync-Erkennung nach freigegebenem PR
+- kontrollierter Sync auf freigegebenen Commit
+- Synced
+- Healthy
+- ResourceQuota und LimitRange erfolgreich übernommen
+- Prod-HPA und Deployment im erwarteten Betriebszustand
+
+Nicht separat durchgeführt:
+- eigener Prod-Drift-Test
+  (Drift/Self-Heal wurde in Dev nachgewiesen)
+
+
+============================================================
+ARGO-CD-ZUGANG UND SICHERHEIT
+============================================================
+
+Argo-CD-Service:
+argocd-server
+Typ: ClusterIP
+Cluster-IP: 10.98.237.191
+Ports: 80,443
+
+Port-Forward-Nachweis:
+pgrep -af 'kubectl.*port-forward'
+Ergebnis:
+OK: Kein kubectl Port-Forward aktiv
+
+ps -ef | grep '[k]ubectl.*port-forward'
+Ergebnis:
+OK: Kein temporärer Port-Forward gefunden
+
+Admin-Passwort:
+Das initiale Argo-CD-Admin-Passwort wurde am 2026-08-13 erfolgreich geändert.
+
+Nachgewiesene CLI-Ausgabe:
+Password updated
+Context 'localhost:8080' updated
+
+Wichtig:
+Das Passwort selbst wird NICHT in dieser Datei dokumentiert.
+
+Initial-Admin-Secret:
+Zum Zeitpunkt der ersten Prüfung war vorhanden:
+argocd-initial-admin-secret
+Typ: Opaque
+Erstellt: 2026-08-08T09:10:57Z
+
+Nach der erfolgreichen Passwortänderung wurde empfohlen, das
+argocd-initial-admin-secret zu löschen und anschließend den NotFound-Zustand
+sowie das Ende des temporären Port-Forwards nachzuweisen.
+
+Hinweis:
+Ein finaler CLI-Nachweis für die tatsächliche Löschung des Secrets wurde im
+gezeigten Verlauf noch nicht bereitgestellt. Deshalb wird die Secret-Löschung
+hier NICHT als bereits durchgeführt behauptet.
+
+
+============================================================
+VERWENDETE ECHTE CLI-NACHWEISE
+============================================================
+
+DEV – final:
+argocd app get pacman-dev --core --refresh
+
+Relevante Werte:
+- Name: argocd/pacman-dev
+- Project: pacman
+- Repo: https://github.com/isangare-ux/pacman-gitops.git
+- Target: main
+- Path: apps/pacman/overlays/dev
+- Sync Policy: Automated (Prune)
+- Sync Status: Synced to main (13afa59)
+- Health Status: Healthy
+- HPA pacman: Succeeded / Pruned
+
+kubectl get deployment pacman -n pacman-dev
+Ergebnis:
+pacman 1/1 1 1
+
+kubectl get hpa -n pacman-dev
+Ergebnis:
+No resources found in pacman-dev namespace.
+
+DEV – Drift:
+kubectl scale deployment pacman -n pacman-dev --replicas=2
+
+Beobachtete Argo-CD-Watch-Folge:
+Synced / Healthy
+-> OutOfSync / Progressing
+-> Synced / Healthy
+
+DEV – Diff:
+argocd app diff pacman-dev --core
+Exit-Code: 0
+
+DEV – History:
+argocd app history pacman-dev --core
+Beispiel:
+ID 14
+2026-08-13 11:44:11 +0200 CEST
+main (5cccc00)
+
+DEV – Git Revert:
+- Commit 022b614 geprüft
+- Revert-Commit 1bd31df
+- PR #6
+- Merge-Commit 844ba234154a67e87ad9e74065732fca4228ff4d
+- Argo CD Synced to main (844ba23)
+- HPA in Dev wieder vorhanden
+
+DEV – Restore:
+- PR #7
+- finale Argo-CD-Revision 13afa59
+- HPA: Succeeded / Pruned
+- Deployment: 1/1
+- kein HPA mehr im Namespace
+
+PROD – vor manuellem Sync:
+argocd app get pacman-prod --core --refresh
+Relevante Werte:
+- Target: main
+- Path: apps/pacman/overlays/prod
+- Sync Policy: Manual
+- Sync Status: OutOfSync from main (5cccc00)
+- Health Status: Healthy
+- ResourceQuota: OutOfSync
+- LimitRange: OutOfSync
+
+PROD – nach manuellem Sync:
+argocd app get pacman-prod --core
+Relevante Werte:
+- Target: main
+- Path: apps/pacman/overlays/prod
+- Sync Policy: Manual
+- Sync Status: Synced to main (5cccc00)
+- Health Status: Healthy
+- ResourceQuota: Synced
+- LimitRange: Synced
+- HPA: Synced / Healthy
+- Deployment: Synced / Healthy
+
+
+============================================================
+IHK-KURZBEWERTUNG
+============================================================
+
+DEV:
+Der GitOps-Ablauf ist praktisch nachgewiesen. Argo CD liest das Dev-Kustomize-
+Overlay aus Git, synchronisiert automatisch, erkennt einen kontrollierten
+Live-Drift, stellt den Git-Sollzustand per Self-Heal wieder her und entfernt
+nach dem Restore nicht mehr gewünschte Ressourcen per Prune. Zusätzlich sind
+History, Diff und ein kontrollierter Git-Revert mit anschließendem Restore
+praktisch dokumentiert.
+
+PROD:
+Der kontrollierte Promotion-Weg ist praktisch nachgewiesen. Nach einem
+freigegebenen Pull Request erkennt Argo CD die neue main-Revision, lässt Prod
+aufgrund der manuellen Sync-Policy zunächst OutOfSync und übernimmt die
+Änderung erst nach einem gezielten manuellen Sync auf die freigegebene
+Revision. Anschließend waren Sync und Health erfolgreich.
+
+Gesamtergebnis:
+AP22 ist technisch weitgehend vollständig nachgewiesen.
+
+Noch offen für einen vollständig abgeschlossenen Sicherheitsnachweis:
+- finaler Nachweis, dass argocd-initial-admin-secret nach der erfolgreichen
+  Passwortänderung tatsächlich gelöscht wurde
+- erneuter finaler Port-Forward-Check nach Abschluss der Passwortänderung
+
+Secrets, Passwörter, Tokens und kubeconfig-Inhalte werden nicht in dieser
+Nachweisdatei gespeichert.

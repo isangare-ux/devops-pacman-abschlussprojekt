@@ -1,0 +1,165 @@
+AP23 – GitOps Releasefluss, Promotion und Rollback
+Projekt: Pacman DevOps / GitOps
+Repository: isangare-ux/pacman-gitops
+Stand der Nachweise: 14.08.2026
+
+1. Ziel
+Ziel von AP23 war der nachvollziehbare Nachweis eines kontrollierten GitOps-Releaseflusses von der Entwicklungsumgebung nach Produktion sowie eines Git-basierten Rollbacks. Änderungen an den Kubernetes-Zielzuständen wurden über das GitOps-Repository versioniert. Argo CD übernahm die Synchronisierung mit dem Kubernetes-Cluster.
+
+2. Erfolgreicher Release und Dev-Synchronisierung
+Für den erfolgreichen Release wurde das unveränderliche Pacman-Image
+
+ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+
+verwendet.
+
+Der zugehörige GitHub-Actions-Release-Run war:
+- Workflow-Run-ID: 31727579486
+- Ergebnis: success
+- Trigger: workflow_dispatch
+- headSha: 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+- Erstellungszeit laut GitHub: 2026-08-13T17:48:49Z
+
+Im GitOps-Repository wurde das Dev-Overlay auf diesen unveränderlichen Commit-SHA-Tag aktualisiert. Der entsprechende GitOps-Commit war:
+- d3eab48 – chore: Dev-Image auf Commit-SHA aktualisieren (2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1)
+
+Argo CD erkannte den neuen Git-Zustand und synchronisierte pacman-dev. Der nachgewiesene Endzustand war:
+- pacman-dev: Synced / Healthy
+- pacman-prod: Synced / Healthy
+
+3. Promotion von Dev nach Prod
+Nach erfolgreicher Prüfung der Dev-Version wurde die identische, unveränderliche Image-Version nach Prod promotet.
+
+Promotion-Branch:
+- feature/ap23-promotion-rollback
+
+Promotion-Commit:
+- b011926 – feat: Pacman-Release nach Produktion promoten
+
+Pull Request:
+- PR #8
+- Quelle: feature/ap23-promotion-rollback
+- Ziel: main
+- Änderung: ausschließlich der Prod-newTag wurde von
+  dfe16c3c188e5011a8fa91324524fb63aaf91a91
+  auf
+  2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+  geändert.
+
+Merge nach main:
+- fb4e892 – Merge pull request #8 from isangare-ux/feature/ap23-promotion-rollback
+
+Nach dem Merge erkannte Argo CD den neuen Prod-Sollzustand:
+- pacman-dev: Synced / Healthy
+- pacman-prod: OutOfSync / Healthy
+
+Dieser Zwischenzustand war beabsichtigt. Prod wurde nicht automatisch aktualisiert. Die Produktionssynchronisierung wurde kontrolliert manuell über Argo CD ausgelöst:
+
+argocd app sync pacman-prod
+
+Nach der Synchronisierung wurde nachgewiesen:
+- pacman-dev: Synced / Healthy
+- pacman-prod: Synced / Healthy
+- tatsächlich laufendes Prod-Image:
+  ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+
+4. Zweiter nachgewiesener erfolgreicher Release
+Als weiterer erfolgreicher Release wurde folgender GitHub-Actions-Run nachgewiesen:
+- Workflow-Run-ID: 30918935482
+- Ergebnis: success
+- Trigger: push
+- headSha: dfe16c3c188e5011a8fa91324524fb63aaf91a91
+- Erstellungszeit laut GitHub: 2026-08-04T14:26:17Z
+- Workflow-Titel:
+  AP14 ci(release): GHCR-Imagepfad und Trivy-Konfiguration optimiert
+
+Damit sind zwei erfolgreiche Release-Workflow-Läufe mit unterschiedlichen Commit-SHAs praktisch nachgewiesen:
+1. dfe16c3c188e5011a8fa91324524fb63aaf91a91
+2. 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+
+Für Digest, SBOM und Scan-Ergebnis dieses AP23-Nachweises liegen in der vorliegenden Arbeitssitzung nicht für beide Releases vollständige verifizierte Werte vor. Diese Felder werden deshalb nicht erfunden und in der Release-Historie als nicht nachgewiesen gekennzeichnet.
+
+5. Kontrollierter fehlerhafter Release
+Für den Negativtest wurde ausschließlich im Dev-Overlay bewusst ein nicht vorhandener Image-Tag gesetzt:
+
+ghcr.io/isangare-ux/pacman-app:ap23-fehlerrelease-nicht-vorhanden
+
+Testbranch:
+- test/ap23-fehlerrelease
+
+Fehler-Commit:
+- bf71732 – test: fehlerhaften Image-Tag für Dev setzen
+
+Pull Request:
+- PR #9
+
+Merge nach main:
+- c575d90 – Merge pull request #9 from isangare-ux/test/ap23-fehlerrelease
+- vollständige Argo-CD-Revision:
+  c575d905654b0a6ba8292e5eca3cee4ca6a4470d
+
+Nach dem automatischen Dev-Sync wurde nachgewiesen:
+- Deployment-Image:
+  ghcr.io/isangare-ux/pacman-app:ap23-fehlerrelease-nicht-vorhanden
+- neuer Pacman-Pod: 0/1, ImagePullBackOff bzw. ErrImagePull
+- bestehender Pacman-Pod: 1/1 Running
+- MongoDB: 1/1 Running
+- pacman-dev: Synced / Progressing bzw. später Degraded
+- pacman-prod: Synced / Healthy
+- Prod-Image blieb unverändert:
+  ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+
+Ergebnis:
+Der Fehler wurde kontrolliert in Dev erkannt. Eine Promotion der fehlerhaften Version nach Prod fand nicht statt. Die Produktionsumgebung blieb auf der zuvor freigegebenen Version gesund.
+
+6. GitOps-konformer Rollback
+Der fehlerhafte GitOps-Zustand wurde nicht durch eine direkte Änderung des Kubernetes-Deployments und nicht durch kubectl rollout undo korrigiert. Stattdessen wurde der fehlerhafte Merge-Commit in Git zurückgenommen.
+
+Rollback-Branch:
+- revert/ap23-fehlerrelease
+
+Revert-Commit:
+- a5d93ef – Revert "Merge pull request #9 from isangare-ux/test/ap23-fehlerrelease"
+
+Der Revert stellte im Dev-Overlay wieder folgenden funktionierenden Tag her:
+- 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+
+Rollback-Pull-Request:
+- PR #10
+- Zustand vor Merge: OPEN
+- anschließend erfolgreich gemergt
+
+Merge-Commit von PR #10:
+- a5bc0b353b646db91389e6cd1df1fcc2556e9a23
+
+Nach dem Merge verwendete Argo CD zunächst noch die alte Revision c575d905654b0a6ba8292e5eca3cee4ca6a4470d. Ein Hard Refresh der Argo-CD-Application wurde ausgelöst. Danach wurde als Argo-Revision der Rollback-Merge-Commit nachgewiesen:
+
+a5bc0b353b646db91389e6cd1df1fcc2556e9a23
+
+Endzustand nach Rollback:
+- Argo CD Sync: Synced
+- Argo CD Health: Healthy
+- Dev-Image:
+  ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+- mongodb-0: 1/1 Running
+- Pacman-Pod: 1/1 Running
+
+7. Begründung des GitOps-Verfahrens
+Der Rollback wurde über Git durchgeführt, weil Git im Projekt die Quelle des gewünschten Systemzustands ist. Eine direkte Änderung im Cluster oder ein isolierter Argo-CD-Klick ohne passenden Git-Stand würde einen Unterschied zwischen dem in Git dokumentierten Sollzustand und dem tatsächlich laufenden Clusterzustand erzeugen.
+
+Bei einem späteren Sync könnte Argo CD den weiterhin in Git gespeicherten fehlerhaften Zustand erneut anwenden. Durch git revert, Pull Request und Merge bleibt dagegen der korrigierte Sollzustand vollständig versioniert, prüfbar und reproduzierbar.
+
+Der nachgewiesene Ablauf war:
+
+Fehlerhafter GitOps-Stand
+-> Argo CD synchronisiert Dev
+-> ImagePullBackOff / ErrImagePull
+-> keine Prod-Promotion
+-> git revert
+-> Rollback-Pull-Request
+-> Merge nach main
+-> Argo CD übernimmt korrigierten Git-Sollzustand
+-> pacman-dev wieder Synced / Healthy
+
+8. Ergebnis
+AP23 wurde praktisch mit erfolgreicher Promotion, kontrollierter Produktionssynchronisierung, zwei unterschiedlichen erfolgreichen Release-Workflow-Läufen, einem kontrollierten Fehlerrelease und einem GitOps-konformen Rollback nachgewiesen. Prod blieb während des Fehlerfalls auf der freigegebenen Version Synced / Healthy.
