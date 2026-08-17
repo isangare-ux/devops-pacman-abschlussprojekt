@@ -1,0 +1,472 @@
+betriebsbefehle.txt
+AP26 – Betriebsautomatisierung und Diagnosewerkzeuge
+Projekt: Pacman DevOps / Kubernetes / Argo CD
+
+Hinweise:
+- Die Befehle sind auf die lokale Docker-Desktop-Kubernetes-Umgebung des Projekts abgestimmt.
+- Kubernetes-Namespaces: pacman-dev, pacman-prod, argocd, monitoring.
+- Die Skript- und Kustomize-Befehle werden aus dem Repository pacman-gitops ausgeführt.
+- Keine Secret-Werte, Tokens oder vollständige kubeconfig ausgeben.
+- Direkte Änderungen am Kubernetes-Sollzustand werden vermieden; Bereitstellungen erfolgen über Git und Argo CD.
+- Befehle mit schreibender Wirkung sind ausdrücklich als erhöhtes Risiko gekennzeichnet.
+
+================================================================================
+01 – Preflight-Check ausführen
+================================================================================
+Befehl:
+./scripts/preflight-check.sh
+
+Zweck:
+Prüft vor Betriebsarbeiten Docker, kubectl, Git, Helm, Argo-CD-CLI,
+Kubernetes-Kontext, Node-Status, benötigte Namespaces, freien Speicher
+und den Git-Status.
+
+Risiko:
+Niedrig. Der Befehl führt nur Prüfungen durch und verändert keine Ressourcen.
+
+Erwartete Ausgabe:
+Mehrere [OK]-Meldungen und am Ende:
+Ergebnis: Alle Prüfungen erfolgreich.
+Exit-Code des Skripts: 0
+
+
+================================================================================
+02 – Clusterstatus der Entwicklungsumgebung anzeigen
+================================================================================
+Befehl:
+./scripts/cluster-status.sh -n pacman-dev
+
+Zweck:
+Zeigt den zusammengefassten Betriebszustand der Entwicklungsumgebung,
+einschließlich Argo CD, Deployments, StatefulSets, Pods, Services, Ingress,
+PVC, HPA, Jobs und Warning-Events.
+
+Risiko:
+Niedrig. Reine Lesezugriffe auf den Cluster.
+
+Erwartete Ausgabe:
+Abschnitte für die genannten Ressourcentypen. Pacman-Deployment und MongoDB
+sollten betriebsbereit erscheinen. Das Skript endet bei erfolgreicher
+Statusabfrage mit Exit-Code 0.
+
+
+================================================================================
+03 – Clusterstatus der Produktionsumgebung anzeigen
+================================================================================
+Befehl:
+./scripts/cluster-status.sh -n pacman-prod
+
+Zweck:
+Prüft den Betriebszustand der Produktionsumgebung getrennt von dev.
+
+Risiko:
+Niedrig. Reine Statusabfrage.
+
+Erwartete Ausgabe:
+Statusinformationen zu pacman-prod. Argo CD sollte im Sollzustand
+Synced und Healthy melden. OutOfSync oder Degraded sind Hinweise auf
+eine zu untersuchende Abweichung.
+
+
+================================================================================
+04 – Diagnosedaten für dev sammeln
+================================================================================
+Befehl:
+./scripts/collect-diagnostics.sh -n pacman-dev -o ./diagnostics
+
+Zweck:
+Sammelt get-/describe-Ausgaben, Events und Pod-Logs in einem lokalen,
+zeitgestempelten Diagnoseordner.
+
+Risiko:
+Niedrig bis mittel. Keine Clusteränderung, aber Logs können sensible
+Anwendungsdaten enthalten und müssen vor Weitergabe geprüft werden.
+
+Erwartete Ausgabe:
+Meldungen wie:
+Sammle Übersicht: deployments
+Sammle Events
+Sammle Pod-Logs
+Diagnosedaten vollständig gesammelt unter: ./diagnostics/<ZEITSTEMPEL>
+
+
+================================================================================
+05 – Docker-Daemon prüfen
+================================================================================
+Befehl:
+docker info
+
+Zweck:
+Prüft, ob Docker Desktop beziehungsweise der Docker-Daemon erreichbar ist
+und zeigt Laufzeitinformationen.
+
+Risiko:
+Niedrig. Reiner Lesezugriff.
+
+Erwartete Ausgabe:
+Informationen zu Client/Server, Containern, Images und Docker Engine.
+Bei nicht laufendem Docker erscheint eine Verbindungsfehlermeldung.
+
+
+================================================================================
+06 – Aktuellen Kubernetes-Kontext prüfen
+================================================================================
+Befehl:
+kubectl config current-context
+
+Zweck:
+Verhindert, dass Betriebsbefehle versehentlich gegen den falschen Cluster
+ausgeführt werden.
+
+Risiko:
+Niedrig. Reiner Lesezugriff.
+
+Erwartete Ausgabe:
+docker-desktop
+
+
+================================================================================
+07 – Kubernetes-Nodes prüfen
+================================================================================
+Befehl:
+kubectl get nodes -o wide
+
+Zweck:
+Prüft Verfügbarkeit, Status und grundlegende Informationen des lokalen
+Kubernetes-Nodes.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Der Docker-Desktop-Node sollte den Status Ready besitzen.
+
+
+================================================================================
+08 – Erforderliche Namespaces prüfen
+================================================================================
+Befehl:
+kubectl get namespace pacman-dev pacman-prod argocd monitoring
+
+Zweck:
+Prüft, ob die für Anwendung, GitOps und Monitoring benötigten Namespaces
+vorhanden sind.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Vier Namespace-Zeilen mit STATUS Active.
+
+
+================================================================================
+09 – Argo-CD-Anwendungen prüfen
+================================================================================
+Befehl:
+kubectl get applications.argoproj.io -n argocd
+
+Zweck:
+Prüft den GitOps-Synchronisierungs- und Health-Status von pacman-dev und
+pacman-prod.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Die Applications pacman-dev und pacman-prod werden mit Sync- und
+Health-Status angezeigt. Sollzustand ist Synced / Healthy.
+
+
+================================================================================
+10 – Workloads in dev prüfen
+================================================================================
+Befehl:
+kubectl get deployments,statefulsets,pods -n pacman-dev -o wide
+
+Zweck:
+Prüft Pacman-Deployment, MongoDB-StatefulSet und die zugehörigen Pods.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Pacman-Deployment mit verfügbaren Replikaten, MongoDB-StatefulSet Ready
+und laufende Pacman-/MongoDB-Pods. Abgeschlossene Job-Pods können zusätzlich
+sichtbar sein.
+
+
+================================================================================
+11 – Workloads in prod prüfen
+================================================================================
+Befehl:
+kubectl get deployments,statefulsets,pods -n pacman-prod -o wide
+
+Zweck:
+Prüft die produktiven Workloads unabhängig von dev.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Pacman-Deployment, MongoDB-StatefulSet und Pods mit READY-/STATUS-Werten.
+Nicht-Ready-Pods müssen untersucht werden.
+
+
+================================================================================
+12 – Services und Ingress in dev prüfen
+================================================================================
+Befehl:
+kubectl get services,ingress -n pacman-dev
+
+Zweck:
+Prüft interne Service-Erreichbarkeit und den externen Zugriff über Ingress.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+ClusterIP-Services für pacman und mongodb sowie ein Ingress für
+pacman-dev.local.
+
+
+================================================================================
+13 – Persistente Volumes prüfen
+================================================================================
+Befehl:
+kubectl get pvc -n pacman-dev
+
+Zweck:
+Prüft die persistenten Datenträger für MongoDB und Backup.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+PVCs wie mongodb-data-mongodb-0 und mongodb-backup mit STATUS Bound.
+
+
+================================================================================
+14 – HPA-Status prüfen
+================================================================================
+Befehl:
+kubectl get hpa -n pacman-dev
+
+Zweck:
+Prüft die automatische Skalierung der Pacman-Anwendung und die aktuell
+ermittelten Metriken.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+HPA mit TARGETS, MINPODS, MAXPODS und REPLICAS.
+Falls "No resources found" erscheint, ist in diesem Namespace aktuell
+kein HPA vorhanden und die Konfiguration muss geprüft werden.
+
+
+================================================================================
+15 – Backup-CronJob und Jobs prüfen
+================================================================================
+Befehl:
+kubectl get cronjobs,jobs -n pacman-dev
+
+Zweck:
+Prüft Zeitplan und Ausführungsstatus von MongoDB-Backups sowie manuellen
+Backup-/Restore-Jobs.
+
+Risiko:
+Niedrig. Reiner Lesezugriff.
+
+Erwartete Ausgabe:
+CronJob mongodb-backup sowie vorhandene Jobs mit Status Complete oder Failed.
+
+
+================================================================================
+16 – Warning-Events anzeigen
+================================================================================
+Befehl:
+kubectl get events -n pacman-dev --field-selector type=Warning --sort-by=.lastTimestamp
+
+Zweck:
+Ermittelt aktuelle Kubernetes-Warnungen, zum Beispiel ImagePull-, Probe-,
+Scheduling- oder Volume-Probleme.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Keine Ausgabe beziehungsweise "No resources found" im fehlerfreien Zustand.
+Bei Problemen erscheinen Warning-Events chronologisch sortiert.
+
+
+================================================================================
+17 – Pacman-Anwendungslogs prüfen
+================================================================================
+Befehl:
+kubectl logs deployment/pacman -n pacman-dev --tail=100
+
+Zweck:
+Prüft die letzten Anwendungslogs zur Fehleranalyse.
+
+Risiko:
+Niedrig bis mittel. Logs können Nutzdaten enthalten. Vor Screenshots oder
+Weitergabe auf sensible Inhalte prüfen.
+
+Erwartete Ausgabe:
+Die letzten maximal 100 Logzeilen eines Pacman-Pods. Im Normalfall keine
+wiederkehrenden Start-, Verbindungs- oder Laufzeitfehler.
+
+
+================================================================================
+18 – MongoDB-Logs prüfen
+================================================================================
+Befehl:
+kubectl logs mongodb-0 -n pacman-dev --tail=100
+
+Zweck:
+Analysiert Datenbankstart, Verbindungen und mögliche MongoDB-Fehler.
+
+Risiko:
+Niedrig bis mittel. Logs vor Dokumentation auf sensible Inhalte prüfen.
+
+Erwartete Ausgabe:
+Die letzten maximal 100 Logzeilen von mongodb-0 ohne wiederkehrende
+kritische Fehler.
+
+
+================================================================================
+19 – Pacman-Pod detailliert untersuchen
+================================================================================
+Befehl:
+PACMAN_POD="$(kubectl get pods -n pacman-dev -o name | grep '^pod/pacman-' | head -1)"; kubectl describe -n pacman-dev "$PACMAN_POD"
+
+Zweck:
+Zeigt Pod-Zustand, Containerstatus, Probes, Ressourcen, Mounts und Events
+für einen Pacman-Pod.
+
+Risiko:
+Niedrig. Reine Diagnose. Die Ausgabe kann Referenzen auf Secret-Namen und
+Keys enthalten, aber keine Secret-Werte ausgeben.
+
+Erwartete Ausgabe:
+Detaillierte Podbeschreibung mit Status Running/Ready sowie einem Events-
+Abschnitt. Bei Fehlern sind dort häufig konkrete Ursachen sichtbar.
+
+
+================================================================================
+20 – Service-Endpunkte prüfen
+================================================================================
+Befehl:
+kubectl get endpointslices -n pacman-dev -l kubernetes.io/service-name=pacman
+
+Zweck:
+Prüft, ob der Pacman-Service tatsächlich erreichbare Pod-Endpunkte besitzt.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+Mindestens ein EndpointSlice mit zugeordneten Endpoint-Adressen.
+Fehlende Endpunkte deuten häufig auf Selector- oder Readiness-Probleme hin.
+
+
+================================================================================
+21 – CPU- und Speicherverbrauch der Pods prüfen
+================================================================================
+Befehl:
+kubectl top pods -n pacman-dev
+
+Zweck:
+Prüft aktuelle CPU- und Speichernutzung und unterstützt die Bewertung von
+Requests, Limits und HPA.
+
+Risiko:
+Niedrig.
+
+Erwartete Ausgabe:
+CPU- und MEMORY-Werte pro Pod. Falls keine Metriken verfügbar sind, muss
+metrics-server beziehungsweise die Metrikerfassung geprüft werden.
+
+
+================================================================================
+22 – Pacman-Rolloutstatus prüfen
+================================================================================
+Befehl:
+kubectl rollout status deployment/pacman -n pacman-dev --timeout=120s
+
+Zweck:
+Prüft, ob ein laufendes oder bereits abgeschlossenes Pacman-Rollout
+erfolgreich verfügbar ist.
+
+Risiko:
+Niedrig. Der Befehl wartet nur auf den Zustand und verändert nichts.
+
+Erwartete Ausgabe:
+deployment "pacman" successfully rolled out
+
+
+================================================================================
+23 – Rollout-Historie anzeigen
+================================================================================
+Befehl:
+kubectl rollout history deployment/pacman -n pacman-dev
+
+Zweck:
+Zeigt die Kubernetes-Revisionen des Deployments und unterstützt die
+Fehleranalyse nach Updates.
+
+Risiko:
+Niedrig. Nur Lesezugriff. Ein Rollback wird hier ausdrücklich nicht
+ausgeführt.
+
+Erwartete Ausgabe:
+REVISION- und CHANGE-CAUSE-Spalten beziehungsweise vorhandene Revisionen.
+
+
+================================================================================
+24 – Dev-Kustomize-Konfiguration validieren
+================================================================================
+Befehl:
+kubectl kustomize apps/pacman/overlays/dev | kubectl apply --dry-run=client -f - >/dev/null && echo "Dev-Overlay valide"
+
+Zweck:
+Rendert das Dev-Overlay und prüft die resultierenden Kubernetes-Manifeste,
+ohne sie in den Cluster einzuspielen.
+
+Risiko:
+Niedrig. Durch --dry-run=client erfolgt keine Änderung am Cluster.
+Der Befehl darf nicht ohne --dry-run als Ersatz für GitOps verwendet werden.
+
+Erwartete Ausgabe:
+Dev-Overlay valide
+
+
+================================================================================
+25 – Manuellen MongoDB-Backup-Lauf starten und Abschluss abwarten
+================================================================================
+Befehl:
+JOB="mongodb-backup-manual-$(date +%Y%m%d%H%M%S)"; kubectl create job --from=cronjob/mongodb-backup "$JOB" -n pacman-dev && kubectl wait --for=condition=complete "job/$JOB" -n pacman-dev --timeout=180s
+
+Zweck:
+Startet bei Bedarf kontrolliert einen zusätzlichen Backup-Lauf auf Basis
+des vorhandenen mongodb-backup-CronJobs und wartet auf dessen Abschluss.
+
+Risiko:
+Mittel. Der Befehl erzeugt tatsächlich eine Kubernetes-Job-Ressource und
+verbraucht temporär CPU, Speicher und Backup-Speicher. Nicht unnötig häufig
+ausführen. Vor Restore- oder Löschaktionen ist ein gültiges Backup zu prüfen.
+
+Erwartete Ausgabe:
+job.batch/<NAME> created
+job.batch/<NAME> condition met
+
+
+================================================================================
+Sicherheitsregeln für den Betrieb
+================================================================================
+1. Niemals "kubectl get secrets -o yaml/json" für Screenshots oder Nachweise verwenden.
+2. Niemals "kubectl config view --raw" oder vollständige kubeconfig-Dateien dokumentieren.
+3. Logs vor Weitergabe auf Tokens, Passwörter und sonstige sensible Daten prüfen.
+4. Direkte kubectl-Änderungen am GitOps-Sollzustand vermeiden.
+5. Restore-, Rollback- und Löschoperationen nur mit bewusstem manuellen Trigger
+   und vorherigem Zustands-/Backup-Nachweis durchführen.
