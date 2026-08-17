@@ -1,0 +1,72 @@
+# AP24 – Monitoring, Grafana und Alerts
+
+## Monitoring-Umgebung
+
+Für die Überwachung des lokalen Kubernetes-Clusters werden Prometheus und Grafana im Namespace `monitoring` eingesetzt.
+
+Installierter Helm-Release:
+
+* Release: `monitoring`
+* Chart: `kube-prometheus-stack-88.3.0`
+* Namespace: `monitoring`
+
+Prometheus sammelt Kubernetes- und Infrastrukturmetriken. Grafana dient zur Visualisierung der erfassten Messwerte. Die Entwicklungs- und Produktionsumgebung können getrennt betrachtet werden.
+
+## Eigene Alert-Regeln
+
+Es wurden zwei eigene Prometheus-Alerts eingerichtet:
+
+* `PacmanReplicasUnavailable`: meldet, wenn beim Deployment `pacman` in `pacman-dev` oder `pacman-prod` mindestens eine gewünschte Replik nicht verfügbar ist.
+* `PacmanContainerRestarts`: meldet, wenn ein Pacman-Container innerhalb von fünf Minuten mindestens zweimal neu gestartet wird.
+
+Beide Alert-Situationen wurden kontrolliert in der Entwicklungsumgebung `pacman-dev` ausgelöst. Nach der Fehlerbehebung wurde jeweils die Rückkehr in den Normalzustand nachgewiesen.
+
+Kontrollierte Fehlertests werden ausschließlich in der Entwicklungsumgebung durchgeführt, um die Produktionsumgebung nicht absichtlich zu beeinträchtigen.
+
+## Fehlende Anwendungsmetriken
+
+Die Pacman-Anwendung stellt keinen eigenen Prometheus-Metrik-Endpunkt bereit.
+
+Der direkte Test des Endpunkts `/metrics` an der Express-Anwendung lieferte:
+
+`HTTP/1.1 404 Not Found`
+
+Daher können derzeit Kubernetes- und Infrastrukturmetriken ausgewertet werden, jedoch keine direkt von der Pacman-Anwendung erzeugten Anwendungsmetriken.
+
+Nicht verfügbar sind beispielsweise:
+
+* Anzahl und Dauer von HTTP-Anfragen
+* HTTP-Fehlerraten
+* Metriken einzelner Pacman-Routen
+* Anzahl gespeicherter Highscores
+* fachliche Spielmetriken
+* MongoDB-Verbindungs- und Abfragezeiten aus Sicht der Anwendung
+
+Als Erweiterungsmöglichkeit könnte die Node.js-/Express-Anwendung zukünftig mit einer Prometheus-Clientbibliothek instrumentiert und um einen `/metrics`-Endpunkt ergänzt werden.
+
+## Grafana-Sicherheit
+
+Der Grafana-Service wird als `ClusterIP` betrieben und besitzt keinen NodePort. Dadurch wird Grafana nicht unnötig dauerhaft über den Host veröffentlicht.
+
+Für administrativen Zugriff kann bei Bedarf temporär ein Kubernetes Port-Forward verwendet und anschließend wieder beendet werden.
+
+Die Grafana-Zugangsdaten werden über das Kubernetes Secret `monitoring-grafana` verwaltet. Secret-Werte werden weder in Screenshots noch im Git-Repository dokumentiert.
+
+## Regelmäßiger Betriebscheck
+
+* [ ] **01 – Kubernetes-Node prüfen:** Der Node `docker-desktop` muss den Status `Ready` besitzen. Befehl: `kubectl get nodes`
+* [ ] **02 – Pacman-Pods prüfen:** Pacman-Pods in `pacman-dev` und `pacman-prod` müssen `Running` und `Ready` sein. Befehl: `kubectl get pods -n pacman-dev` bzw. `kubectl get pods -n pacman-prod`
+* [ ] **03 – Deployment-Replikate prüfen:** Gewünschte und verfügbare Pacman-Replikate müssen übereinstimmen. Befehl: `kubectl get deployment pacman -n pacman-dev` bzw. `kubectl get deployment pacman -n pacman-prod`
+* [ ] **04 – MongoDB prüfen:** Das MongoDB-StatefulSet und der MongoDB-Pod müssen betriebsbereit sein. Befehl: `kubectl get statefulset,pods -n pacman-dev` bzw. `kubectl get statefulset,pods -n pacman-prod`
+* [ ] **05 – Persistenten Speicher prüfen:** PVCs müssen gebunden sein; auffällige Speicherbelegung muss untersucht werden. Befehl: `kubectl get pvc -n pacman-dev` bzw. `kubectl get pvc -n pacman-prod`
+* [ ] **06 – Container-Neustarts prüfen:** Unerwartet steigende Restart-Zähler müssen analysiert werden. Befehl: `kubectl get pods -A`
+* [ ] **07 – Ressourcenverbrauch prüfen:** CPU- und Speicherverbrauch der Pacman- und MongoDB-Workloads in Prometheus beziehungsweise Grafana kontrollieren. Auffällige Abweichungen zu Requests und Limits müssen untersucht werden.
+* [ ] **08 – Argo-CD-Status prüfen:** `pacman-dev` und `pacman-prod` müssen den erwarteten Sync- und Health-Zustand besitzen. Befehl: `kubectl get applications -n argocd`
+* [ ] **09 – Prometheus prüfen:** Prometheus muss verfügbar sein und die benötigten Monitoring-Targets beziehungsweise Kubernetes-Metriken erfassen. Befehl: `kubectl get pods -n monitoring`
+* [ ] **10 – Alert-Zustand prüfen:** Die Alert-Regeln `PacmanReplicasUnavailable` und `PacmanContainerRestarts` auf `Pending` oder `Firing` kontrollieren. Aktive Alerts müssen analysiert und nach der Behebung auf die Rückkehr in den Normalzustand geprüft werden.
+* [ ] **11 – Grafana-Dashboard prüfen:** Dashboard für Dev und Prod auf aktuelle Werte, fehlende Daten und ungewöhnliche Abweichungen kontrollieren.
+* [ ] **12 – Grafana-Zugriff und Secrets prüfen:** Grafana soll weiterhin ausschließlich als `ClusterIP` betrieben werden. Zugangsdaten dürfen nicht in Git, Logs oder Screenshots erscheinen.
+
+## Reaktion bei Abweichungen
+
+Bei einem auffälligen Betriebszustand wird zuerst die betroffene Ressource eingegrenzt. Anschließend werden Kubernetes-Events, Pod-Zustände, Container-Logs, Prometheus-Metriken und der Argo-CD-Status geprüft. Änderungen am Sollzustand erfolgen über die versionierte GitOps-Konfiguration. Nach einer Fehlerbehebung wird der Normalzustand erneut kontrolliert und der Nachtest dokumentiert.

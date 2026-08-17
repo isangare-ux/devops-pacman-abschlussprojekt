@@ -1,0 +1,285 @@
+AP25 – MongoDB Backup, Restore und Datenwiederherstellung
+Nachweisdatei: backup_restore_nachweis.txt
+Projekt: DevOps / GitOps Pacman
+Umgebung: pacman-dev
+Namespace: pacman-dev
+Dokumentationsstand: 17.08.2026
+
+1. Ziel
+------
+Ziel des Arbeitspakets AP25 ist die praktische Sicherung und Wiederherstellung
+der MongoDB-Datenbank "pacman" mit Kubernetes Jobs. Ein Git-Commit oder ein
+persistenter Daten-PVC allein wird nicht als Datenbankbackup betrachtet.
+
+2. Verwendete Kubernetes-Ressourcen
+-----------------------------------
+MongoDB-Service:
+- Name: mongodb
+- Port: 27017
+- Service-Typ: Headless Service / ClusterIP None
+
+MongoDB-Daten-PVC:
+- Name: mongodb-data-mongodb-0
+- Kapazität: 1 GiB
+- Zugriff: RWO
+- StorageClass: hostpath
+- Status: Bound
+
+Dedizierter Backup-PVC:
+- Name: mongodb-backup
+- Kapazität: 2 GiB
+- Zugriff: RWO
+- StorageClass: hostpath
+- Status: Bound
+- Mount im Backup-/Restore-Container: /backup
+
+Container-Image:
+- mongo:4.4.30-focal
+
+Zugangsdaten:
+- Kubernetes Secret: mongodb-credentials
+- verwendete Schlüssel: app-username, app-password
+- Secret-Werte wurden nicht in Logs, Screenshots oder diese Datei übernommen.
+
+3. Backup-CronJob
+-----------------
+CronJob:
+- Name: mongodb-backup
+- Zeitplan: 30 21 * * *
+- Zeitzone: Europe/Berlin
+- concurrencyPolicy: Forbid
+- successfulJobsHistoryLimit: 3
+- failedJobsHistoryLimit: 3
+- backoffLimit: 2
+- restartPolicy: OnFailure
+
+Ressourcen:
+- requests.cpu: 50m
+- requests.memory: 64Mi
+- limits.cpu: 200m
+- limits.memory: 256Mi
+
+Sicherungsverfahren:
+- Werkzeug: mongodump
+- Datenbank: pacman
+- Archivformat: --archive und --gzip
+- Dateiname: /backup/pacman-<UTC-Zeitstempel>.archive.gz
+- Prüfsumme: SHA256-Sidecar-Datei
+- Aufbewahrung: Dateien älter als 7 Tage werden mit find -mtime +7 -delete entfernt.
+
+4. Erfolgreicher automatischer Backup-Lauf
+------------------------------------------
+Automatisch gestarteter Job:
+- mongodb-backup-29781810
+- Status: Complete 1/1
+- Laufzeit: 8 s
+- Pod: mongodb-backup-29781810-cwcq5
+- Pod-Status: Completed
+
+Erzeugtes Archiv:
+- /backup/pacman-20260816-193003.archive.gz
+
+Lognachweis:
+- "Starte MongoDB-Backup: /backup/pacman-20260816-193003.archive.gz"
+- mongodump schrieb vorhandene Daten aus der Datenbank pacman.
+- "Backup erfolgreich erstellt: /backup/pacman-20260816-193003.archive.gz"
+
+Zusätzlich wurde für dieses Archiv die gespeicherte Prüfsummendatei mit
+sha256sum -c erfolgreich geprüft:
+- Ergebnis: /backup/pacman-20260816-193003.archive.gz: OK
+
+5. Kontrollierte Fehlerfälle und Nachtest
+-----------------------------------------
+Fehlerfall 1 – ResourceQuota:
+Ein temporärer Backup-Testjob konnte zunächst keinen Pod erzeugen.
+Kubernetes meldete:
+- FailedCreate
+- exceeded quota
+- angefordert: limits.cpu=200m
+- verwendet: limits.cpu=2
+- Grenze: limits.cpu=2
+
+Nach Bereinigung temporärer Ressourcen war wieder Kapazität vorhanden.
+
+Fehlerfall 2 – kontrollierter temporärer Backup-Job:
+- Job endete mit Failed 0/1.
+- backoffLimit war für den Test auf 0 gesetzt.
+- Job-Events belegten:
+  - SuccessfulCreate
+  - SuccessfulDelete
+  - BackoffLimitExceeded
+- Da der fehlgeschlagene Pod bereits gelöscht war, wurde keine nicht mehr
+  nachweisbare konkrete Containerfehlerursache behauptet.
+
+Erfolgreicher Nachtest:
+- Job: mongodb-backup-nachtest
+- Status: Complete 1/1
+- Laufzeit: 14 s
+
+6. Eindeutiger Restore-Testdatensatz
+------------------------------------
+Vor dem Restore wurde über die Pacman-Anwendung ein eindeutig identifizierbarer
+Highscore erzeugt:
+- Name: AP25-RESTORE-TEST-2256
+- Punktzahl: 420
+- Anzeige vor dem Restore: Rang 1
+
+Damit war ein fachlich eindeutiger Vergleich vor und nach der Wiederherstellung
+möglich.
+
+7. Backup unmittelbar vor dem Restore
+--------------------------------------
+Job:
+- mongodb-backup-before-restore
+- Status: Complete 1/1
+- Laufzeit: 13 s
+
+Verwendete Backup-Datei:
+- /backup/pacman-20260816-210202.archive.gz
+
+Lognachweis:
+- pacman.highscore wurde mit 2 Dokumenten gesichert.
+- pacman.userstats wurde mit 1 Dokument gesichert.
+- pacman.ap17_persistenztest wurde mit 1 Dokument gesichert.
+- "Backup erfolgreich erstellt"
+
+Exakte Größe der verwendeten Backup-Datei:
+- 1011 Byte
+
+SHA256 der verwendeten Backup-Datei:
+- 50cc8ff74e677ee842e80f66e358b7997c2fc8e7d1b334b47f537f53d8bbe93d
+
+8. Kontrollierte Löschung des Testdatensatzes
+---------------------------------------------
+Der Testdatensatz wurde gezielt mit einem separaten temporären Job gelöscht.
+
+Datenbanknachweis:
+- "Lösche ausschließlich AP25-RESTORE-TEST-2256"
+- acknowledged: true
+- deletedCount: 1
+
+Damit ist belegt, dass genau ein Dokument kontrolliert entfernt wurde.
+
+9. Manueller Restore
+--------------------
+Restore-Manifest:
+- apps/pacman/base/restore-job-template.yaml
+
+Restore-Job:
+- mongodb-restore-manual
+- Status: Complete 1/1
+- Laufzeit: 11 s
+- backoffLimit: 0
+
+Restore-Quelle:
+- /backup/pacman-20260816-210202.archive.gz
+
+Restore-Ziel:
+- Collection pacman.highscore
+
+Wesentliche Optionen:
+- --archive
+- --gzip
+- --nsInclude="pacman.highscore"
+- --drop
+
+Der Backup-PVC wurde im Restore-Container readOnly eingehängt.
+
+Restore-Ergebnis laut mongorestore:
+- 2 document(s) restored successfully.
+- 0 document(s) failed to restore.
+- "MongoDB-Restore erfolgreich abgeschlossen"
+
+10. Prüfung nach dem Restore
+----------------------------
+Datenbank und Pods:
+- mongodb-0: 1/1 Running
+- pacman: 1/1 Running
+- mongodb-restore-manual: Completed
+
+Anwendung:
+- HTTP/1.1 200 OK
+
+Highscore-Anzeige:
+- AP25-RESTORE-TEST-2256 ist nach dem Restore wieder sichtbar.
+- Punktzahl: 420
+- Der zuvor vorhandene zweite Highscore blieb ebenfalls im gesicherten Stand enthalten.
+
+Anwendungslogs:
+- wiederholte GET-Anfragen auf /highscores/list nach dem Restore
+
+MongoDB-Logs:
+- Client "mongorestore" sichtbar
+- Authentication succeeded
+- CMD: drop für pacman.highscore
+- Finishing collection drop
+- createCollection für pacman.highscore
+- _id_-Index wurde erneut angelegt
+- Im geprüften Ausschnitt waren keine kritischen Restore-Fehler erkennbar.
+
+11. RPO und RTO
+---------------
+RPO (Recovery Point Objective):
+- Bei täglichem Backup beträgt das theoretische maximale Datenverlustfenster
+  bis zu 24 Stunden.
+- Änderungen seit dem letzten erfolgreichen Backup können bei einem Ausfall
+  verloren gehen.
+
+RTO (Recovery Time Objective):
+- Gemessene technische Restore-Job-Dauer: 11 s.
+- Diese 11 s sind ausdrücklich NICHT das vollständige betriebliche RTO.
+- Zum End-to-End-RTO gehören zusätzlich Fehlererkennung, Diagnose, Auswahl und
+  Prüfung des Backups, manueller Start des Restore-Jobs und Funktionsnachtest.
+- Eine vollständige End-to-End-RTO wurde im lokalen Testszenario nicht separat
+  mit einer durchgängigen Zeitmessung ermittelt.
+
+12. Grenzen des lokalen Ein-Node-Szenarios
+------------------------------------------
+- Kubernetes, Pacman und MongoDB laufen auf demselben lokalen Docker-Desktop-Node.
+- Ein vollständiger Ausfall des Hosts betrifft Cluster, Anwendung und Datenbank.
+- Daten-PVC und Backup-PVC liegen in derselben lokalen Storage-Umgebung.
+- Das Backup schützt daher nicht gegen den vollständigen Verlust des lokalen Hosts
+  oder Datenträgers.
+- Eine externe bzw. Offsite-Backup-Kopie wurde nicht umgesetzt.
+- MongoDB läuft in der Testumgebung nicht hochverfügbar.
+- Der Restore wird bewusst manuell ausgelöst.
+- --drop ersetzt die Collection durch den Stand des Backups; neuere Daten können
+  dadurch verloren gehen.
+- Die gemessenen Zeiten beziehen sich auf eine sehr kleine Testdatenbank und sind
+  nicht direkt auf produktive Datenmengen übertragbar.
+- gzip komprimiert die Sicherung, verschlüsselt sie jedoch nicht.
+- Für die lokale hostpath-StorageClass standen in Prometheus keine
+  kubelet_volume_stats_* PVC-Metriken zur Verfügung.
+
+13. Zugehörige Screenshot-Nachweise
+-----------------------------------
+Unter screenshots/18_backup_restore/ wurden bzw. werden insbesondere folgende
+Nachweise abgelegt:
+- AP25_F02_CronJob_erfolgreicher_Backup_Lauf.png
+- AP25_F03_Secret_Ressourcen_Concurrency_Aufbewahrung.png
+- AP25_F04_Backupdateien_auf_PVC.png
+- AP25_F04_SHA256_Pruefung_OK.png
+- AP25_F04_Fehlerfall_ResourceQuota_FailedCreate.png
+- AP25_F04_Fehlerjob_BackoffLimitExceeded.png
+- AP25_F04_Nachtest_BackupJob_Complete.png
+- AP25_F05_Test_Highscore_vor_Restore.png
+- AP25_F05_Backup_mit_TestHighscore.png
+- AP25_F06_TestHighscore_geloescht_deletedCount1.png
+- AP25_F06_RestoreJob_Complete.png
+- AP25_F07_Anwendung_HTTP200_nach_Restore.png
+- AP25_F07_MongoDB_Logs_nach_Restore.png
+- AP25_F08_Backup_Groesse_SHA256.png
+
+14. Gesamtbewertung AP25
+------------------------
+Der dedizierte Backup-PVC, der automatische mongodump-CronJob, die
+Aufbewahrungsstrategie, Secret-Nutzung, Ressourcenbegrenzung, Erfolgs- und
+Fehlerfälle sowie ein praktischer Restore mit eindeutigem Testdatensatz wurden
+nachgewiesen.
+
+Der Restore wurde nicht allein anhand eines Kubernetes-Jobstatus bewertet,
+sondern zusätzlich über Datenbanklogs, HTTP-Erreichbarkeit und die sichtbare
+Highscore-Anzeige funktional verifiziert.
+
+Es wurden keine Passwörter, Tokens oder Secret-Werte in diese Nachweisdatei
+übernommen.
