@@ -1,0 +1,15 @@
+===== AUSGANGSMATERIAL – PRÜFSUMMEN =====
+Projekt: DevOps Pacman Abschlussprojekt
+Prüfzeitpunkt: 2026-08-26T15:18:15+02:00
+Algorithmus: SHA-256
+
+Hinweis:
+Die folgenden Prüfsummen beziehen sich auf die zum Prüfzeitpunkt
+tatsächlich vorhandenen Dateien im lokalen Projektbestand.
+
+18d670b19b2a7516a427e51028d643e7339bf7b713627c6eef7b0410e078b789  pacman-app/Dockerfile
+46176d9cc2bb72b285a6652b2bbc8744e042970d85980c7247da79cbac200d09  pacman-app/package.json
+1162560f03c20fa56d4def3a7ec668a149c3b9adecdce11eebb5dc37eff41ce7  pacman-app/package-lock.json
+a5c242ee2831894a99e1643ca5a146b64665ef1f3a6db421e2d90324058d2fbe  pacman-app/compose.yaml
+7c12a77f46e042412273b579d497f70d7ba24c3892a295b393a06c84fc4921c3  pacman-app/.dockerignore
+589ed823e9a84c56feb95ac58e7cf384626b9cbf4fda2a907bc36e103de1bad2  pacman-app/LICENSE
