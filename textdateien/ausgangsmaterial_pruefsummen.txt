@@ -13,3 +13,7 @@ tatsächlich vorhandenen Dateien im lokalen Projektbestand.
 a5c242ee2831894a99e1643ca5a146b64665ef1f3a6db421e2d90324058d2fbe  pacman-app/compose.yaml
 7c12a77f46e042412273b579d497f70d7ba24c3892a295b393a06c84fc4921c3  pacman-app/.dockerignore
 589ed823e9a84c56feb95ac58e7cf384626b9cbf4fda2a907bc36e103de1bad2  pacman-app/LICENSE
+
+Originalarchive:
+12fadef5820cf524163f822dbb783276198d81af4990c7955867d7159ca5fb70  ausgangsmaterial/pacman-master.zip
+996585d0ec3fd73aa9f0ea0a444aaf5a7dd71e0e519917fa4c0bf4c6a3d0d4af  ausgangsmaterial/docker.zip

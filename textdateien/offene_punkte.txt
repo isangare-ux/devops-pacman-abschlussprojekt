@@ -1,149 +1,272 @@
-OFFENE PUNKTE – AP28 DEVOPS-FÄLLE
+OFFENE PUNKTE – PACMAN DEVOPS-/GITOPS-ABSCHLUSSPROJEKT
 Projekt: Pacman – CI/CD und GitOps auf Kubernetes
-Stand: 20.08.2026
-
-ZWECK
-Diese Datei dokumentiert den finalen Reststatus von AP28.
-Die DevOps-Fälle D01 bis D15 sowie die zugehörigen Abschlussprüfungen
-wurden gegen den aktuellen Nachweisstand abgeglichen.
+Stand: 27.08.2026
 
 ======================================================================
-1. AKTUELLER STATUS D01 BIS D15
+1. ZWECK
 ======================================================================
 
-D01 – ABGESCHLOSSEN
-D02 – ABGESCHLOSSEN
-D03 – ABGESCHLOSSEN
-Finale Screenshot-Reihenfolge:
-  D03_01_running_aber_nicht_ready.png
-  D03_02_pod_running_aber_nicht_ready.png
-  D03_03_readiness_probe_404.png
-  D03_04_nachtest_ready_healthy.png
+Diese Datei dokumentiert ausschließlich noch offene oder bewusst
+abzugrenzende Punkte des Gesamtprojekts vor der finalen Abgabe.
 
-D04 – ABGESCHLOSSEN
-D05 – ABGESCHLOSSEN
-D06 – ABGESCHLOSSEN
+Bereits abgeschlossene technische Tests, DevOps-Fälle und Fehlerfälle
+werden nicht erneut als offene Punkte geführt.
 
-D07 – ABGESCHLOSSEN
-Fehlernachweis:
-  D07_01_hpa_skaliert_trotz_last_nicht.png
-Nachtest:
-  D07_02_hpa_nachtest_erfolgreich.png
-Nachgewiesen:
-  - HPA-Zielwert im Fehlerzustand: 1000 %
-  - gültige CPU-Metrik vorhanden
-  - Rückbau auf 60 %
-  - SuccessfulRescale bis New size: 3 belegt
+======================================================================
+2. ABGESCHLOSSENE QUALITÄTSNACHWEISE
+======================================================================
 
-D08 – ABGESCHLOSSEN
-Nachweise:
-  D08_01_prod_rollout_fehlerbild_gesamt.png
-  D08_03_rollback_erfolgreich.png
+AP28 – DevOps-Fälle:
+ABGESCHLOSSEN.
 
-D09 – ABGESCHLOSSEN
-Nachgewiesen:
-  - MONGO_HOST=mongodb-wrong-host im Fehlerzustand
-  - Backup-Job Failed / BackoffLimitExceeded
-  - Rückbau auf MONGO_HOST=mongodb
-  - Reset-Commit: 7691889
-  - erfolgreicher Backup-Nachtest mit Exit-Code 0
-  - Argo CD Synced / Healthy
-Nachweis:
-  D09_03_argocd_nachtest_synced_healthy.png
+- D01 bis D15 vollständig dokumentiert.
+- D13 abgeschlossen mit dokumentierter Plattformgrenze:
+  Die NetworkPolicy-Durchsetzung konnte unter Docker Desktop nicht
+  zuverlässig erzwungen werden. Die YAML-Konfiguration und der
+  kontrollierte Test sind dokumentiert.
+- devopsfaelle.csv formal geprüft.
 
-D10 – ABGESCHLOSSEN
-Finale Screenshot-Reihenfolge:
-  D10_01_liveness_restart_fehler.png
-  D10_02_argocd_synced_degraded.png
-  D10_03_prometheus_alert_firing.png
-  D10_04_liveness_monitoring_nachtest_erfolgreich.png
+AP29 – Tests:
+ABGESCHLOSSEN.
 
-D11 – ABGESCHLOSSEN
-Funktionaler Nachtest:
-  - Pacman 1/1 Running
-  - MongoDB 1/1 Running
-  - HTTP 200 auf /highscores/list
-  - Argo CD Synced / Healthy
-Cleanup-Nachtest:
-  - Test-Secret mongodb-credentials-d11-test: NotFound
-  - Original-Secret mongodb-credentials weiterhin vorhanden
-  - Pacman ReadyReplicas=1 / AvailableReplicas=1
-  - MongoDB ReadyReplicas=1 / CurrentReplicas=1
-  - Argo CD Synced / Healthy
-Nachweis:
-  D11_04_cleanup_nachtest_erfolgreich.png
+- T01 bis T30 vollständig.
+- T30 besitzt einen eigenen Abschlussnachweis:
+  screenshots/21_tests/T30_prod_abnahme_e2e_http200.png
+- Finale Prod-Abnahme:
+  Argo CD Synced/Healthy,
+  Pacman 3/3 Ready/Available,
+  MongoDB 1/1,
+  Startseite HTTP 200,
+  /highscores/list HTTP 200.
 
-D12 – ABGESCHLOSSEN
+AP30 – Fehleranalyse:
+ABGESCHLOSSEN.
 
-D13 – ABGESCHLOSSEN MIT DOKUMENTIERTER PLATTFORMGRENZE
+- F01 bis F08 vollständig.
+- Fehlerursache, Maßnahme und Nachtest dokumentiert.
+- fehlerprotokoll.csv formal geprüft.
+
+======================================================================
+3. PROMOTION UND ROLLBACK
+======================================================================
+
+Promotion T28:
+ABGESCHLOSSEN.
+
+- PR #36
+- Merge: f62e055
+- Prod übernahm den geprüften Dev-Stand
+  a4c49abd81d9f5c4472b90110cb3fca5ae0348c2.
+- Argo CD anschließend Synced/Healthy.
+
+Rollback T29:
+ABGESCHLOSSEN.
+
+- PR #37 wurde erfolgreich gemergt.
+- Revert-Commit: 8d81e09
+- Merge-Commit:
+  f051d6087d7f0437b852c21f2045122f42ab1c22
+- Merge-Zeitpunkt: 2026-08-25T15:11:44Z
+- Prod wurde auf
+  2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+  zurückgesetzt.
+- Argo CD Synced/Healthy.
+- Rollout erfolgreich.
+
 Hinweis:
-  Die Fehlkonfiguration 27018 statt 27017 und der Rückbau sind belegt.
-  Die praktische NetworkPolicy-Durchsetzung konnte in der lokalen
-  Docker-Desktop-Kubernetes-Umgebung nicht zuverlässig erzwungen werden.
-  Diese bekannte technische Einschränkung bleibt transparent dokumentiert
-  und ist kein offener DevOps-Fall.
-
-D14 – ABGESCHLOSSEN
-Finale Screenshot-Reihenfolge:
-  D14_01_memorylimit_oomkilled_fehlernachweis.png
-  D14_02_memorylimit_rueckbau_gitvergleich_erfolgreich.png
-  D14_03_oomkilled_fehler_nicht_mehr_aktiv.png
-
-D15 – ABGESCHLOSSEN
-Der Monitoring-Blindspot wurde über Prometheus/kube-state-metrics
-nachgewiesen und erfolgreich zurückgebaut.
+Der später lokal geprüfte main-Stand des GitOps-Repositories lautet
+f62e05517b68adc7fc166eb6313de1f411acca8b.
+Dies ändert nicht den historisch erfolgreich durchgeführten
+Rollback-Test T29.
 
 ======================================================================
-2. ABSCHLUSSPRÜFUNGEN
+4. FINALER GIT-NACHWEIS
 ======================================================================
 
-[ERLEDIGT 01] devopsfaelle.xlsx / daten/devopsfaelle.csv
-  - 15 Datensätze
-  - 16 Pflichtspalten
-  - Fall-IDs D01 bis D15 vollständig
-  - Fall-IDs eindeutig
-  - Nachweisreferenzen an die finalen Screenshot-Dateinamen angepasst
+ABGESCHLOSSEN.
 
-[ERLEDIGT 02] AP28-09_tests_fehler_und_devopsfaelle.docx
-  - Bearbeitungsstand auf 20.08.2026 aktualisiert
-  - D03-, D10- und D14-Screenshot-Referenzen vereinheitlicht
-  - D09- und D11-Nachweise mit aktuellem Abschlussstand abgeglichen
-  - D13-Plattformgrenze weiterhin transparent dokumentiert
-  - AP28-Fazit auf finalen Abschlussstatus aktualisiert
+pacman-app:
+HEAD: a4c49abd81d9f5c4472b90110cb3fca5ae0348c2
+Branch: main...origin/main
+Commit-Anzahl: 54
 
-[ERLEDIGT 03] D11-Nachtest und Cleanup
-  - fachlicher Nachtest mit HTTP 200 dokumentiert
-  - temporäres Test-Secret entfernt
-  - Original-Secret weiterhin vorhanden
-  - Pacman und MongoDB betriebsbereit
-  - Argo CD Synced / Healthy
-  - früherer D11-Ingress-Befund wird nicht als offener AP28-Punkt geführt,
-    da der dokumentierte D11-Abnahmetest erfolgreich abgeschlossen ist
+pacman-gitops:
+HEAD: f62e05517b68adc7fc166eb6313de1f411acca8b
+Branch: main...origin/main
+Commit-Anzahl: 125
 
-[ERLEDIGT 04] Finale Secret- und Nachweisprüfung
-  - Word-Text auf offensichtliche Secret-Muster geprüft
-  - AP28-Screenshots visuell geprüft
-  - keine Passwörter, Tokens, Kubernetes-Secret-Werte, kubeconfig-Inhalte
-    oder privaten Schlüssel in den finalen Nachweisen festgestellt
-  - Screenshot-Dateinamen geprüft und für D03, D10 und D14 vereinheitlicht
+Secret-Mustercheck:
+ABGESCHLOSSEN.
+
+- Keine echten Klartext-Zugangsdaten im aktuellen Git-Stand nachgewiesen.
+- GitHub-Actions-Referenzen auf GITHUB_TOKEN und GITOPS_TOKEN sind
+  Secret-Referenzen und keine Klartextwerte.
+- .env.example ist eine Vorlagendatei.
+- jQuery-Treffer wurde als Regex-False-Positive eingeordnet.
 
 ======================================================================
-3. RESTSTATUS AP28
+5. RELEASE-NACHWEIS
 ======================================================================
 
-Technische DevOps-Fälle D01 bis D15:
-  ABGESCHLOSSEN.
+ABGESCHLOSSEN FÜR DEN DOKUMENTIERTEN RELEASE.
 
-D13:
-  ABGESCHLOSSEN MIT DOKUMENTIERTER PLATTFORMGRENZE.
+Workflow:
+Release
 
-Dokumentationsabgleich:
-  ABGESCHLOSSEN.
+Run-ID:
+32585355704
 
-Secret- und Nachweisprüfung:
-  ABGESCHLOSSEN.
+Commit:
+a4c49abd81d9f5c4472b90110cb3fca5ae0348c2
 
-ZIELZUSTAND:
-  AKTUELL KEINE OFFENEN TECHNISCHEN ODER DOKUMENTARISCHEN PUNKTE FÜR AP28.
+Release-Tag:
+v1.0.0
+
+GHCR-Image:
+ghcr.io/isangare-ux/pacman-app:a4c49abd81d9f5c4472b90110cb3fca5ae0348c2
+
+Nachgewiesener Image-Digest:
+sha256:114b3c9505cf4dde0e58101127f4e2ae6395928e7f013e33e7c8039cc2496490
+
+Security:
+Trivy-Security-Gate erfolgreich.
+HIGH/CRITICAL Findings mit verfügbarer Behebung hätten aufgrund
+exit-code: 1 den Release gestoppt.
+
+SBOM:
+Im derzeit dokumentierten Release-Workflow nicht erzeugt.
+Dieser Sachverhalt wird transparent dokumentiert.
+
+======================================================================
+6. NOCH OFFENE ABSCHLUSSNACHWEISE
+======================================================================
+
+[OFFEN 01] Aktuell tatsächlich eingesetzte Dev-/Prod-Image-Digests
+
+Der GHCR-Digest des dokumentierten Release-Images ist nachgewiesen.
+Vor der finalen Übergabe sollen zusätzlich die tatsächlich aktuell
+laufenden Dev- und Prod-Image-Digests aus dem Cluster erfasst werden.
+
+Erwarteter Nachweis:
+- Dev Deployment / Pod Image-ID bzw. Digest
+- Prod Deployment / Pod Image-ID bzw. Digest
+- Vergleich mit GHCR
+
+Status:
+NOCH ZU ERFASSEN.
+
+---------------------------------------------------------------------
+
+[OFFEN 02] Vollständiger Restore-Endnachweis
+
+Der MongoDB-Backup-Prozess ist real nachgewiesen:
+- erfolgreiche Backup-Jobs
+- Backup-Datei
+- SHA-256-Erzeugung im Backup-Verfahren
+
+Ein vollständig dokumentierter Restore mit folgenden drei Punkten
+ist im aktuellen Nachweisstand noch nicht eindeutig bestätigt:
+
+1. ausgewählte Backup-Datei,
+2. erfolgreiche SHA-256-Prüfung vor Restore,
+3. fachlicher Datenvergleich nach Restore.
+
+Status:
+NOCH ZU BESTÄTIGEN.
+
+---------------------------------------------------------------------
+
+[OFFEN 03] Finaler Betriebs-/Übergabe-Snapshot
+
+Vor der endgültigen Abgabe soll ein aktueller Abschlussnachweis
+erstellt werden mit:
+
+- Argo CD Dev: Sync / Health
+- Argo CD Prod: Sync / Health
+- Pacman Deployments
+- MongoDB StatefulSets
+- Pods / Ready / Restarts
+- PVC-Status
+- HPA
+- letzte Backup-Jobs
+- aktuelle Monitoring-/Alert-Situation
+
+Keine Passwörter, Tokens oder Secret-Werte dürfen sichtbar sein.
+
+Empfohlener Ablageort:
+screenshots/23_uebergabe/
+
+Status:
+NOCH ZU ERFASSEN.
+
+======================================================================
+7. BEKANNTE TECHNISCHE EINSCHRÄNKUNGEN
+======================================================================
+
+Diese Punkte sind keine offenen Fehler, sondern dokumentierte
+Projektgrenzen.
+
+1. Docker Desktop / lokaler Single-Node-Kubernetes-Cluster
+   - keine echte Node-Hochverfügbarkeit
+   - Referenz- und Prüfungsumgebung
+
+2. NetworkPolicy unter Docker Desktop
+   - Durchsetzung nicht in allen Tests zuverlässig reproduzierbar
+   - fachliche YAML-Konfiguration dennoch dokumentiert
+
+3. Legacy-Anwendung
+   - ältere Node.js-/Anwendungsabhängigkeiten
+   - Security-Scans und kontrollierte Updates weiterhin notwendig
+
+4. Anwendungsmetriken
+   - Plattform- und Kubernetes-Metriken vorhanden
+   - eigene fachliche Pacman-Metriken bleiben Erweiterungspotenzial
+
+======================================================================
+8. FORMALER DOKUMENTATIONSSTAND
+======================================================================
+
+Geprüft / abgeschlossen:
+
+- daten/codeanalyse.csv
+- daten/werkzeugmatrix.csv
+- daten/release_history.csv
+- daten/devopsfaelle.csv
+- daten/fehlerprotokoll.csv
+- daten/testprotokoll.csv
+- planung/arbeitspakete_und_zeitplanung.csv
+- planung/branch_strategie.csv
+- planung/commit_strategie.csv
+- textdateien/ausgangsmaterial_pruefsummen.txt
+- textdateien/installations_und_versionsnachweis.txt
+- textdateien/git_nachweis.txt
+- dokumentation/09_tests_fehler_und_devopsfaelle.docx
+- dokumentation/10_uebergabe_und_betriebsanleitung.docx
+- dokumentation/abschlussdokumentation.docx
+
+======================================================================
+9. FINALER RESTSTATUS
+======================================================================
+
+Technische DevOps-Fälle:
+ABGESCHLOSSEN.
+
+Tests T01 bis T30:
+ABGESCHLOSSEN.
+
+Fehlerfälle F01 bis F08:
+ABGESCHLOSSEN.
+
+Promotion und Rollback:
+ABGESCHLOSSEN.
+
+Git-Nachweis:
+ABGESCHLOSSEN.
+
+Noch offen vor finaler Übergabe:
+
+1. aktuelle Dev-/Prod-Image-Digests erfassen,
+2. vollständigen Restore-Endnachweis bestätigen,
+3. finalen Betriebs-/Cluster-/Alert-Snapshot erstellen.
 
 ENDE

@@ -1,22 +1,22 @@
 ﻿Werkzeug,Zweck,Installationsart,Version,Pruefbefehl,Ergebnis,Abweichung,Bemerkung
 Windows 11,Host-Betriebssystem,Lokale Installation,25H2,winver,OK,-,screenshots/02_arbeitsumgebung/01_windows11.png
 WSL Ubuntu,Linux-Entwicklungsumgebung,WSL 2,24.04,lsb_release -a,OK,-,installations_und_versionsnachweis.txt; exakter Point-Release separat nur bei Bedarf nachweisen
-Git,Versionsverwaltung,Lokale Installation,2.43.0,git --version,OK,-,
-GitHub,Quellcodeverwaltung,Cloud,-,Repository prüfen,OK,-,
+Git,Versionsverwaltung,Lokale Installation,2.43.0,git --version,OK,-,Keine zusätzliche Bemerkung erforderlich.
+GitHub,Quellcodeverwaltung,Cloud,-,Repository prüfen,OK,-,Keine zusätzliche Bemerkung erforderlich.
 Visual Studio Code,Entwicklungsumgebung (IDE),Lokale Installation,1.129.1,code --version,OK,-,installations_und_versionsnachweis.txt
-Docker Desktop,Container-Plattform,Lokale Installation,4.73.1,docker version,OK,-,
-Docker Engine,Container-Laufzeit,Bestandteil von Docker Desktop,29.4.3,docker version,OK,-,
-Docker Compose,Multi-Container-Orchestrierung,Bestandteil von Docker Desktop,v5.1.3,docker compose version,OK,-,
-Node.js,JavaScript-Laufzeit,Lokale Installation,v18.19.1,node -v,OK,-,
-npm,Paketverwaltung,Bestandteil von Node.js,9.2.0,npm -v,OK,-,
+Docker Desktop,Container-Plattform,Lokale Installation,4.73.1,docker version,OK,-,Keine zusätzliche Bemerkung erforderlich.
+Docker Engine,Container-Laufzeit,Bestandteil von Docker Desktop,29.4.3,docker version,OK,-,Keine zusätzliche Bemerkung erforderlich.
+Docker Compose,Multi-Container-Orchestrierung,Bestandteil von Docker Desktop,v5.1.3,docker compose version,OK,-,Keine zusätzliche Bemerkung erforderlich.
+Node.js,JavaScript-Laufzeit,Lokale Installation,v18.19.1,node -v,OK,-,Keine zusätzliche Bemerkung erforderlich.
+npm,Paketverwaltung,Bestandteil von Node.js,9.2.0,npm -v,OK,-,Keine zusätzliche Bemerkung erforderlich.
 kubectl,Kubernetes CLI,Lokale Installation,v1.34.1,kubectl version --client,OK,-,screenshots/02_arbeitsumgebung/02_kubectl_version.png
 Kubernetes (Docker Desktop),Lokaler Kubernetes-Cluster,Docker Desktop,Server v1.35.1,kubectl version,OK,-,Aktiver Projektcluster laut Kontext docker-desktop; Serverversion über kubectl version nachgewiesen
 Minikube,Lokaler Kubernetes-Cluster,Lokale Installation,v1.38.1,minikube version,OK,-,"Minikube installiert, aber nicht als aktiver Projektcluster verwendet"
-Helm,Kubernetes-Paketmanager,Lokale Installation,v4.2.3,helm version,OK,-,
+Helm,Kubernetes-Paketmanager,Lokale Installation,v4.2.3,helm version,OK,-,Keine zusätzliche Bemerkung erforderlich.
 Container Runtime,Container-Laufzeit,Docker Engine,docker://29.4.3,kubectl get node -o jsonpath='{.items[0].status.nodeInfo.containerRuntimeVersion}',OK,-,screenshots/02_arbeitsumgebung/03_container_runtime.png
 StorageClass,Persistenter Speicher,Kubernetes,standard,kubectl get storageclass,OK,-,screenshots/02_arbeitsumgebung/04_storageclass.png; screenshots/02_arbeitsumgebung/13_storageclass.png
-Argo CD,GitOps-Deployment,Helm (Kubernetes),v3.4.5+564b949,argocd version,OK,-,
-GitHub Actions,Continuous Integration,GitHub Cloud,-,Workflow im Repository,OK,-,
+Argo CD,GitOps-Deployment,Helm (Kubernetes),v3.4.5+564b949,argocd version,OK,-,Keine zusätzliche Bemerkung erforderlich.
+GitHub Actions,Continuous Integration,GitHub Cloud,-,Workflow im Repository,OK,-,Keine zusätzliche Bemerkung erforderlich.
 MongoDB,Datenbank,Docker-Container,mongo:4.4.30-focal,docker image inspect mongo:4.4.30-focal --format '{{.RepoTags}}',OK,-,Im Projekt verwendetes MongoDB-Image gemäß Compose/Kubernetes-Konfiguration
 Prometheus,Monitoring,Helm (Kubernetes),noch zu verifizieren,helm list -n monitoring,Nachweis ergänzen,Exakte installierte Version im Versionsnachweis nicht enthalten,helm list -n monitoring bzw. kubectl get pods -n monitoring -o wide
 Grafana,Visualisierung,Helm (Kubernetes),noch zu verifizieren,helm list -n monitoring,Nachweis ergänzen,Exakte installierte Version im Versionsnachweis nicht enthalten,helm list -n monitoring bzw. kubectl get pods -n monitoring -o wide

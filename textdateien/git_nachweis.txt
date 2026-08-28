@@ -1,0 +1,179 @@
+===== GIT-NACHWEIS – PACMAN DEVOPS-/GITOPS-PROJEKT =====
+Stand: konsolidierter Nachweis aus den im Projektverlauf tatsächlich ausgegebenen Git-Daten
+Hinweis: Finale Repository-HEADs und ein aktueller Secret-Scan müssen unmittelbar vor der Abgabe
+auf dem Projektarbeitsplatz erneut erzeugt werden. Nicht belegte Werte werden hier nicht erfunden.
+
+===== 1. REPOSITORIES =====
+Repository 1: pacman-app
+Repository 2: pacman-gitops
+
+Die Trennung ist Bestandteil der Projektarchitektur:
+- pacman-app: Anwendung, Dockerfile, Compose, Tests, GitHub Actions
+- pacman-gitops: Kubernetes, Kustomize, Argo CD, Plattform-/Betriebskonfiguration
+
+===== 2. PACMAN-APP – DOKUMENTIERTE GIT-NACHWEISE =====
+AP28 D01 / Dependency- und Lockdatei-Fehler:
+ac46541  test: Dependency-Konflikt für AP28 D01 reproduzieren
+86c9f59  fix: Lockdatei nach Dependency-Änderung synchronisieren
+183fa6e  Merge pull request #6 from isangare-ux/test/ap28-d01-dependency-fehler
+
+Zusätzlicher Lockdatei-Negativtest:
+86c8301  test: inkonsistente Lockdatei für CI-Negativtest erzeugen
+5d53e73  fix: Lockdatei-Inkonsistenz im CI-Negativtest beheben
+
+===== 3. PACMAN-GITOPS – DOKUMENTIERTE FEHLER-/FIX-NACHWEISE =====
+D02 / ImagePull:
+99ac6e1  test: ungültigen Image-Tag für AP28 D02 setzen
+03561ce  fix: gültigen Image-Tag für AP28 D02 wiederherstellen
+265b2a2  Merge pull request #16 from isangare-ux/test/ap28-d02-imagepull-fehler
+12c8dae  Merge pull request #17 from isangare-ux/fix/ap28-d02-imagepull-fehler
+
+D03 / Readiness:
+3dcf950  test: fehlerhafte Readiness Probe für AP28 D03 setzen
+98afd8c  fix: korrekte Readiness Probe für AP28 D03 wiederherstellen
+
+D04 / Service targetPort:
+d5e0f9e  test: falschen Service-TargetPort für AP28 D04 setzen
+d6b8339  fix: korrekten Service-TargetPort für AP28 D04 wiederherstellen
+c84358c  Merge pull request #20 from isangare-ux/test/ap28-d04-ingress-502
+282ecf2  Merge pull request #21 from isangare-ux/fix/ap28-d04-ingress-502
+
+D05 / MongoDB Datenmount:
+dca37fe  test: MongoDB-Datenvolume für AP28 D05 schreibgeschützt einbinden
+dbe2b93  fix: MongoDB-Datenmount für AP28 D05 wieder beschreibbar machen
+f0c1412  Merge pull request #22 from isangare-ux/test/ap28-d05-mongodb-startfehler
+2b28803  Merge pull request #23 from isangare-ux/fix/ap28-d05-mongodb-startfehler
+
+D07 / HPA:
+32e3911  test: AP28 D07 - unrealistischen HPA-Zielwert fuer Dev aktivieren
+e7a4f4a  fix: AP28 D07 - HPA-Zielwert auf korrekten Wert zuruecksetzen
+13ddb74  fix: AP28 D07 - Argo CD ignoreDifferences fuer HPA-verwaltete Replicas
+
+D09 / Backup:
+374dbfe  test: AP28 D09 - falscher MongoDB-Hostname im Backup-CronJob (Prod)
+a3c4118  fix: AP28 D09 - MongoDB-Hostname im Backup-CronJob zuruecksetzen
+0663059  Merge pull request #29 from isangare-ux/test/ap28-d09-backup-cronjob-fehlerhaft
+f6c35fb  Merge pull request #31 from isangare-ux/fix/ap28-d09-backup-hostname-restore
+
+D10 / Liveness:
+bb4e38c  test: AP28 D10 - ungueltigen Liveness-Probe-Pfad in Dev setzen
+93e24a2  fix: AP28 D10 - urspruenglichen Liveness-Probe-Pfad wiederherstellen
+9edbafe  Merge pull request #32 from isangare-ux/test/ap28-d10-liveness-fehlerhaft
+968fdc4  Merge pull request #33 from isangare-ux/fix/ap28-d10-liveness-restore
+
+D11 / Secret:
+0b20165  test: AP28 D11 - Pacman auf D11-Test-Secret mit falschen Zugangsdaten umstellen
+cd71e2c  fix: AP28 D11 - Pacman wieder auf korrektes Secret zuruecksetzen
+aa5bbba  Merge pull request #34 from isangare-ux/test/ap28-d11-secret-rotation-fehlerhaft
+4b3fbc9  Merge pull request #35 from isangare-ux/fix/ap28-d11-secret-restore
+
+D12 / ResourceQuota:
+a08bd4c  test: AP28 D12 - Pacman-Dev auf 3 Replicas skalieren (ResourceQuota-Test)
+899f5b3  fix: AP28 D12 - Pacman-Dev auf urspruengliche 1 Replica zuruecksetzen
+
+D13 / NetworkPolicy:
+c3517a9  test: AP28 D13 - fehlerhafte NetworkPolicy Pacman->MongoDB in pacman-dev
+068015f  fix: AP28 D13 - fehlerhafte Dev-NetworkPolicy entfernen, Baseline wiederherstellen
+22e38a1  fix: NetworkPolicy-Labels korrigieren und StatefulSet-Sync-Fehler beheben
+
+D14 / Memory:
+384b801  test: AP28 D14 - Memory-Limit Pacman-Dev bewusst zu niedrig (64Mi)
+89c224f  fix: AP28 D14 - Memory-Limit Pacman-Dev auf 128Mi/256Mi zuruecksetzen
+
+D15 / Monitoring:
+e93478eacc3a75158e289357d1ffb0a5228d62e6  Fehler-Commit: pacman-dev über kube-state-metrics-Denylist ausgeblendet
+44cca27  Rückbau-Commit: Namespace-Denylist für pacman-dev entfernt
+
+===== 4. GITOPS IMAGE-AKTUALISIERUNGEN =====
+2ef23d8  chore: Dev-Image auf Commit-SHA aktualisieren (183fa6e06182984f2c975dca828aa8168d089481)
+7e6abec  chore: Dev-Image auf Commit-SHA aktualisieren (9b614cb5ae7cfcecde50ded15e0b9d3bd6f363d0)
+92ae5f7  chore: Dev-Image auf Commit-SHA aktualisieren (ac7aa707ef75e3297e7f6a9c2f7f922094609279)
+dece81e  chore: Dev-Image auf Commit-SHA aktualisieren (a4c49abd81d9f5c4472b90110cb3fca5ae0348c2)
+
+===== 5. GITOPS REVERT-/ROLLBACK-NACHWEISE =====
+1bd31df  revert: HPA-Delete-Patch für GitOps-Test zurücknehmen
+3dddfb9  Revert "revert: HPA-Delete-Patch für GitOps-Test zurücknehmen"
+a5d93ef  Revert "Merge pull request #9 from isangare-ux/test/ap23-fehlerrelease"
+
+Dokumentierter Prod-Promotion-/Rollback-Verlauf:
+PR #36  Promotion Dev -> Prod; Merge f62e055 ist Bestandteil des aktuell geprüften main-Stands.
+PR #37  Rollback; Revert 8d81e09; Merge f051d6087d7f0437b852c21f2045122f42ab1c22.
+GitHub bestätigt PR #37 als MERGED am 2026-08-25T15:11:44Z.
+Der historische Rollback-Merge ist im aktuell lokal geprüften main-Stand nicht mehr enthalten.
+
+===== 6. BRANCH-NACHWEISE AUS DEN GELIEFERTEN AUSGABEN =====
+test/ap28-d01-dependency-fehler
+test/ap28-d02-imagepull-fehler
+fix/ap28-d02-imagepull-fehler
+test/ap28-d03-readiness-fehler
+fix/ap28-d03-readiness-fehler
+test/ap28-d04-ingress-502
+fix/ap28-d04-ingress-502
+test/ap28-d05-mongodb-startfehler
+fix/ap28-d05-mongodb-startfehler
+test/ap28-d07-hpa-nicht-skaliert
+fix/ap28-d07-hpa-nicht-skaliert
+fix/ap28-d07-hpa-argocd-replicas-konflikt
+test/ap28-d09-backup-cronjob-fehlerhaft
+fix/ap28-d09-backup-hostname-restore
+test/ap28-d10-liveness-fehlerhaft
+fix/ap28-d10-liveness-restore
+test/ap28-d11-secret-rotation-fehlerhaft
+fix/ap28-d11-secret-restore
+
+===== 7. FINALER ABGABECHECK DURCHGEFÜHRT =====
+
+Die zuvor offenen Git-Prüfungen wurden lokal durchgeführt.
+
+Bestätigt:
+- finaler HEAD pacman-app erfasst
+- finaler HEAD pacman-gitops erfasst
+- Branch-/Remote-Status beider Repositories geprüft
+- Commit-Anzahl beider Repositories erfasst
+- aktueller Secret-Mustercheck durchgeführt
+- Promotion-/Rollback-Historie gegen den realen main-Stand geprüft
+
+Die konkreten Ergebnisse sind in Abschnitt 8 und 9 dokumentiert.
+
+===== 8. FINALER GIT-STAND =====
+
+pacman-app:
+HEAD: a4c49abd81d9f5c4472b90110cb3fca5ae0348c2
+Branch-Status: main...origin/main
+Commit-Anzahl: 54
+
+pacman-gitops:
+HEAD: f62e05517b68adc7fc166eb6313de1f411acca8b
+Branch-Status: main...origin/main
+Commit-Anzahl: 125
+
+Promotion:
+f62e055 ist Bestandteil von main und entspricht dem Merge von PR #36.
+
+Rollback:
+8d81e09 ist der Revert-Commit des Rollback-Tests auf test/ap29-t29-rollback.
+PR #37 wurde auf GitHub erfolgreich nach main gemergt.
+Merge-Commit: f051d6087d7f0437b852c21f2045122f42ab1c22
+Merge-Zeitpunkt: 2026-08-25T15:11:44Z
+Der aktuell lokal geprüfte main-Stand lautet f62e05517b68adc7fc166eb6313de1f411acca8b.
+Der historische PR-#37-Merge ist in diesem späteren lokalen main-Stand nicht mehr enthalten.
+Dies ändert nicht den erfolgreich durchgeführten und dokumentierten Rollback-Test T29.
+
+===== 9. SECRET-CHECK =====
+
+pacman-app:
+- .env.example wurde aufgrund des Dateinamens gefunden; es handelt sich um eine Beispiel-/Vorlagendatei.
+- release.yml referenziert secrets.GITHUB_TOKEN und secrets.GITOPS_TOKEN.
+  Dabei handelt es sich um GitHub-Actions-Secret-Referenzen, nicht um Klartextwerte.
+- Der Treffer in public/js/jquery-3.4.1.min.js stammt aus minifiziertem Bibliothekscode
+  und wird als Regex-False-Positive bewertet.
+
+pacman-gitops:
+- Im ausgeführten Mustercheck wurden keine offengelegten Klartext-Secrets nachgewiesen.
+
+Bewertung:
+Im aktuellen Git-Stand wurden keine echten Klartext-Zugangsdaten nachgewiesen.
+Secret-Referenzen und Vorlagendateien sind zulässig; echte Secret-Werte dürfen weiterhin
+nicht in Git, Logs oder Screenshots erscheinen.
+
+===== ENDE FINALER GIT-NACHWEIS =====

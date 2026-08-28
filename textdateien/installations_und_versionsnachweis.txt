@@ -13,3 +13,32 @@
 | **Node.js**                | **v18.19.1**         | `node -v`                  | ✅      |
 | **npm**                    | **9.2.0**            | `npm -v`                   | ✅      |
 | **Visual Studio Code**     | **1.130.0**          | `code --version`           | ✅      |
+
+===== ERGÄNZENDE PROJEKT- UND CLUSTERWERTE =====
+
+Visual Studio Code:
+Version: 1.129.1
+
+Kubernetes (Docker Desktop):
+Server-Version: v1.35.1
+
+Kubernetes-Kontext:
+docker-desktop
+
+Container Runtime:
+docker://29.4.3
+
+StorageClass:
+standard
+
+Argo CD:
+Version: v3.4.5+564b949
+
+MongoDB Container-Image:
+mongo:4.4.30-focal
+
+Virtualisierung:
+Aktiv
+
+Administratorrechte:
+Vorhanden
