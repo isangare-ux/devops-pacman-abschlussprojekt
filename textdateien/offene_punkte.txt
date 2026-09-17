@@ -147,63 +147,194 @@ Dieser Sachverhalt wird transparent dokumentiert.
 6. NOCH OFFENE ABSCHLUSSNACHWEISE
 ======================================================================
 
-[OFFEN 01] Aktuell tatsächlich eingesetzte Dev-/Prod-Image-Digests
+[ERLEDIGT 01] Aktuell tatsächlich eingesetzte Dev-/Prod-Image-Digests
 
-Der GHCR-Digest des dokumentierten Release-Images ist nachgewiesen.
-Vor der finalen Übergabe sollen zusätzlich die tatsächlich aktuell
-laufenden Dev- und Prod-Image-Digests aus dem Cluster erfasst werden.
+DEV:
+- Image-Tag:
+  49d04ea09f6918701a33a30438c5fcdb051ba6d9
+- Laufender Image-Digest:
+  sha256:4f920afcacb97369cfc4c5bab7e656d78073311c5ebeb92b309c2c4783a00531
+- GitOps-Sollzustand, Deployment, laufender Pod und GHCR stimmen überein.
 
-Erwarteter Nachweis:
-- Dev Deployment / Pod Image-ID bzw. Digest
-- Prod Deployment / Pod Image-ID bzw. Digest
-- Vergleich mit GHCR
+PROD:
+- Image-Tag:
+  2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+- Laufender Image-Digest:
+  sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+- Alle drei Pacman-Replikate verwenden denselben Digest.
+- GitOps-Sollzustand, laufende Pods und GHCR stimmen überein.
+- Der Stand entspricht dem dokumentierten Rollback-Ziel (siehe Abschnitt 3,
+  Rollback T29).
+
+Bewertung:
+Die aktuell tatsächlich eingesetzten Dev- und Prod-Image-Versionen sind
+eindeutig über Image-Tag und Image-Digest nachvollziehbar. Die laufenden
+Cluster-Artefakte wurden mit dem jeweiligen GitOps-Sollzustand und GHCR
+abgeglichen (docker buildx imagetools inspect, Prod-Digest bestätigt am
+11.09.2026).
+
+Dev und Prod verwenden aktuell bewusst unterschiedliche Image-Versionen
+(Dev: 49d04ea0…, Prod: 2ae1f2e4… gemäß Rollback T29). Dies ist vom
+dokumentierten Rollback-Stand so beabsichtigt und nicht mit dem separat
+dokumentierten Release-Digest von v1.0.0
+(sha256:114b3c9505cf4dde0e58101127f4e2ae6395928e7f013e33e7c8039cc2496490,
+Abschnitt 5) zu verwechseln.
 
 Status:
-NOCH ZU ERFASSEN.
+ABGESCHLOSSEN.
 
 ---------------------------------------------------------------------
 
-[OFFEN 02] Vollständiger Restore-Endnachweis
+[ERLEDIGT 02] Vollständiger Restore-Endnachweis
+
+Umgebung: ausschließlich pacman-dev. PROD wurde nicht verändert.
+Datum des Nachweises: 11.09.2026.
 
 Der MongoDB-Backup-Prozess ist real nachgewiesen:
 - erfolgreiche Backup-Jobs
 - Backup-Datei
 - SHA-256-Erzeugung im Backup-Verfahren
 
-Ein vollständig dokumentierter Restore mit folgenden drei Punkten
-ist im aktuellen Nachweisstand noch nicht eindeutig bestätigt:
+Ergänzend wurde nun ein vollständiger, fachlich nachvollziehbarer Restore
+durchgeführt und verifiziert:
 
-1. ausgewählte Backup-Datei,
-2. erfolgreiche SHA-256-Prüfung vor Restore,
-3. fachlicher Datenvergleich nach Restore.
+1. Ausgewählte Backup-Datei:
+   pacman-20260911-125421.archive.gz
+   Unmittelbar vor dem Restore über den bestehenden Backup-Mechanismus
+   (CronJob mongodb-backup) erzeugt; enthielt 3 Highscore-Dokumente
+   inklusive des eigens angelegten Testdatensatzes.
+
+2. Erfolgreiche SHA-256-Prüfung vor dem Restore:
+   Erwartet (Sidecar-Datei .sha256):
+   5d459ec4f7bb326129f214700f5571039f9c79beade7f29f7caff383eddaf9b8
+   Tatsächlich (unabhängig neu berechnet):
+   5d459ec4f7bb326129f214700f5571039f9c79beade7f29f7caff383eddaf9b8
+   Ergebnis: identisch, BESTANDEN.
+
+3. Fachlicher Datenvergleich nach dem Restore:
+   - Vor dem Restore wurde über die Pacman-Anwendung (POST /highscores)
+     ein eindeutig identifizierbarer Testdatensatz angelegt:
+     Name: AP-RESTORE-TEST-20260911, Score: 999, Rang 1.
+   - Der Datensatz wurde kontrolliert und ausschließlich für diesen einen
+     Namen gelöscht (deleteOne, deletedCount: 1) und war danach über
+     /highscores/list nachweislich nicht mehr vorhanden.
+   - Der Restore wurde mit dem vorhandenen, bereits im Cluster nachgewiesenen
+     Restore-Mechanismus (Job-Spezifikation wie mongodb-restore-manual,
+     mongorestore mit --nsInclude="pacman.highscore" --drop) gegen genau
+     die geprüfte Backup-Datei ausgeführt.
+   - Restore-Ergebnis: "3 document(s) restored successfully. 0 document(s)
+     failed to restore."
+   - Nach dem Restore war AP-RESTORE-TEST-20260911 mit Score 999 über
+     /highscores/list wieder sichtbar; die beiden übrigen, zuvor
+     gesicherten Highscore-Einträge blieben ebenfalls erhalten.
+   - Zusatznachweis Schreibfähigkeit: nach dem Restore wurde erfolgreich
+     ein weiterer Datensatz geschrieben und wieder gelesen.
+   - Anwendung und Datenbank betriebsbereit: Pacman-Pod Ready, mongodb-0
+     Ready, Startseite HTTP 200.
+   - MongoDB-Logs zeigten erfolgreiche Authentifizierung sowie sauberes
+     drop/createCollection für pacman.highscore ohne erkennbare Fehler.
+   - Die Bewertung stützte sich nicht allein auf den Job-Status "Complete",
+     sondern zusätzlich auf mongorestore-Ergebnis, Datenbankinhalt über den
+     Anwendungsendpoint und Log-Prüfung.
+   - Nach Abschluss des Nachweises wurden beide Testdatensätze
+     (AP-RESTORE-TEST-20260911, AP-POST-RESTORE-WRITETEST-20260911) sowie
+     alle temporären Jobs kontrolliert wieder entfernt; der ursprüngliche
+     Datenbestand ist unverändert.
+
+Hinweis (Nebenbefund, keine Änderung vorgenommen):
+Die Datei apps/pacman/base/restore-job-template.yaml ist im aktuellen
+main-Stand des pacman-gitops-Repositories leer (0 Byte). Eine befüllte
+Fassung existiert nur auf dem separaten Branch backup/ap26-vor-bereinigung.
+Für den obigen Restore wurde daher die inhaltlich identische, bereits im
+Cluster nachgewiesene Job-Spezifikation verwendet. Dieser Sachverhalt wird
+hier lediglich transparent dokumentiert.
 
 Status:
-NOCH ZU BESTÄTIGEN.
+ABGESCHLOSSEN.
 
 ---------------------------------------------------------------------
 
-[OFFEN 03] Finaler Betriebs-/Übergabe-Snapshot
+[ERLEDIGT 03] Finaler Betriebs-/Übergabe-Snapshot
 
-Vor der endgültigen Abgabe soll ein aktueller Abschlussnachweis
-erstellt werden mit:
+Erfassungsdatum: 11.09.2026. Nachweisform: CLI-basierter Snapshot
+(kubectl/Argo-CD-Ressourcenstatus). Es wurden keine grafischen
+Screenshots erzeugt; screenshots/23_uebergabe/ war ein empfohlener,
+kein zwingender Ablageort. Es wurden keine Passwörter, Tokens oder
+Secret-Werte abgefragt oder sichtbar gemacht.
 
-- Argo CD Dev: Sync / Health
-- Argo CD Prod: Sync / Health
-- Pacman Deployments
-- MongoDB StatefulSets
-- Pods / Ready / Restarts
-- PVC-Status
-- HPA
-- letzte Backup-Jobs
-- aktuelle Monitoring-/Alert-Situation
+ARGO CD:
+- pacman-dev: Sync=Synced, Health=Healthy, Revision=cd56ae6e7...
+- pacman-prod: Sync=OutOfSync, Health=Healthy, Revision=cd56ae6e7...
+  Betroffene Ressource: PodDisruptionBudget "pacman"
+  Befund: apps/pacman/overlays/prod/pdb.yaml (Commit 692b49b) trägt nur
+  die Labels app.kubernetes.io/name und app.kubernetes.io/component.
+  Die live im Cluster vorhandene PDB besitzt zusätzlich
+  app.kubernetes.io/managed-by=argocd, app.kubernetes.io/part-of=
+  pacman-platform und responsibility=devops – Labels, die in allen
+  übrigen Prod-Manifesten (z. B. base/deployment.yaml) bereits enthalten
+  sind. fachlicher Effekt: keiner (minAvailable: 2 und Selector sind in
+  Git und Cluster identisch) – die Abweichung betrifft ausschließlich
+  Labels. Dies ist ein neu identifizierter, kleiner Nacharbeitspunkt
+  (pdb.yaml um die fehlenden Labels ergänzen), unabhängig vom hier
+  abgeschlossenen Snapshot-Nachweis selbst.
 
-Keine Passwörter, Tokens oder Secret-Werte dürfen sichtbar sein.
+PACMAN DEPLOYMENTS:
+- Dev: 1/1 Ready/Available
+- Prod: 3/3 Ready/Available
 
-Empfohlener Ablageort:
-screenshots/23_uebergabe/
+MONGODB STATEFULSETS:
+- Dev: mongodb 1/1 Ready
+- Prod: mongodb 1/1 Ready
+
+PODS / READY / RESTARTS:
+- Dev: mongodb-0 1/1 (9 Restarts, letzter vor 83 Min.),
+  pacman-6b6b9d64dc-xxvgg 1/1 (0 Restarts)
+- Prod: mongodb-0 1/1 (10 Restarts, letzter vor 83 Min.),
+  3x pacman-75b6cdfc49-* 1/1 (5–9 Restarts, jeweils vor 83 Min.)
+  Hinweis: Die zeitgleichen Restarts in Dev und Prod vor 83 Minuten
+  fallen zeitlich mit einem Neustart des lokalen Docker-Desktop-Clusters
+  zusammen und sind kein anwendungsspezifischer Fehler.
+
+PVC-STATUS:
+- Dev: mongodb-backup 2Gi Bound, mongodb-data-mongodb-0 1Gi Bound
+- Prod: mongodb-backup 2Gi Bound, mongodb-data-mongodb-0 1Gi Bound
+
+HPA:
+- Dev: pacman, CPU 3%/60%, min 1 / max 3, aktuell 1 Replica
+- Prod: pacman, CPU 3%/60%, min 3 / max 6, aktuell 3 Replicas
+
+LETZTE BACKUP-JOBS:
+- Dev: mongodb-backup-29816370 Complete, mongodb-backup-29817810
+  Complete (jüngster Lauf); ein älterer mongodb-backup-29801970 (vor
+  11 Tagen) ist als Failed in der Job-Historie erhalten
+  (failedJobsHistoryLimit), wurde bereits im Rahmen von AP28/D09 als
+  historischer Fehlerfall behandelt und durch nachfolgende erfolgreiche
+  Läufe funktional entkräftet.
+- Prod: mongodb-backup-29814930, -29816370 und -29817810 jeweils
+  Complete; derselbe historische Failed-Job (-29801970) ist ebenfalls
+  in der Historie sichtbar, mit identischer Bewertung wie in Dev.
+
+MONITORING-/ALERT-SITUATION (Prometheus/Alertmanager):
+- 13 aktive Alerts zum Erfassungszeitpunkt.
+- Cluster-/Control-Plane-bezogen (etcdMembersDown, etcdInsufficient-
+  Members, KubeSchedulerInstanceUnreachable, KubeControllerManager-
+  InstanceUnreachable, KubeProxyInstanceUnreachable, mehrere TargetDown):
+  typische Folge des lokalen Docker-Desktop-Single-Node-Clusters, dessen
+  Control-Plane-Komponenten nicht für Prometheus-Scraping exponiert
+  sind; siehe Abschnitt 7, Punkt 1 (keine echte Node-Hochverfügbarkeit).
+- Watchdog: dauerhaft "firing" per Alertmanager-Design (Lebendigkeits-
+  prüfung der Alerting-Pipeline), kein Fehlerzustand.
+- KubeJobFailed (pacman-dev, pacman-prod): bezieht sich auf denselben
+  historischen Backup-Fehlerfall (-29801970, siehe oben); aktuelle
+  Backup-Läufe sind erfolgreich.
+- KubeQuotaFullyUsed (pacman-dev, info): spiegelt eine kurzzeitige volle
+  Auslastung der Dev-CPU-Limit-Quota während der Restore-Tests zu
+  OFFEN 02 wider (HPA-Scale-up auf 2 Pacman-Replicas plus temporäre
+  Test-Jobs); die Quota hat wieder freie Kapazität, kein dauerhafter
+  Zustand.
 
 Status:
-NOCH ZU ERFASSEN.
+ABGESCHLOSSEN.
 
 ======================================================================
 7. BEKANNTE TECHNISCHE EINSCHRÄNKUNGEN
