@@ -32,7 +32,9 @@ StorageClass:
 standard
 
 Argo CD:
-Version: v3.4.5+564b949
+Version: v3.5.0
+(vorheriger Stand bei früherem CLI-/Cluster-Check: v3.4.5+564b949 — durch
+Argo-CD-Upgrade überholt, siehe finale Image-Version unten)
 
 MongoDB Container-Image:
 mongo:4.4.30-focal
@@ -42,3 +44,63 @@ Aktiv
 
 Administratorrechte:
 Vorhanden
+
+===== FINALE CONTAINER-IMAGES UND HELM-CHART-VERSIONEN =====
+
+Gültig für die finalen Pacman-Projekt-Namespaces: pacman-dev, pacman-prod,
+monitoring, argocd, ingress-nginx sowie kube-system (nur für
+projektbezogene Komponenten wie metrics-server). Ältere Demo-/Test-
+Namespaces außerhalb des finalen Pacman-Projekts sind hier nicht
+berücksichtigt.
+
+| Komponente                  | Bereich         | Typ             | Image/Chart                                              | Version/Tag                                                              | Versionierungsart      | Nachweis (Namespace) |
+| ---------------------------- | --------------- | --------------- | --------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------- | --------------------- |
+| Pacman DEV                   | Anwendung        | Container-Image | ghcr.io/isangare-ux/pacman-app                             | e0caf8f4c897cddcfe6e3d6dc3f15077c31a87f1                                  | Commit-SHA               | pacman-dev             |
+| Pacman PROD                  | Anwendung        | Container-Image | ghcr.io/isangare-ux/pacman-app                             | 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1                                  | Commit-SHA               | pacman-prod            |
+| MongoDB                      | Anwendung        | Container-Image | mongo                                                      | 4.4.30-focal                                                               | fester Image-Tag         | pacman-dev / pacman-prod |
+| BusyBox                      | Betrieb (Backup-Verifikation) | Container-Image | busybox                                        | 1.36                                                                       | fester Image-Tag         | pacman-dev (backup-check-ihk-dev) / pacman-prod (backup-check-ihk) |
+| Grafana                      | Monitoring       | Container-Image | docker.io/grafana/grafana                                  | 13.1.3                                                                     | fester Image-Tag         | monitoring             |
+| Grafana Sidecar               | Monitoring       | Container-Image | quay.io/kiwigrid/k8s-sidecar                               | 2.10.1                                                                     | fester Image-Tag         | monitoring             |
+| Prometheus Operator           | Monitoring       | Container-Image | quay.io/prometheus-operator/prometheus-operator            | v0.93.0                                                                    | fester Image-Tag         | monitoring             |
+| Prometheus Config Reloader    | Monitoring       | Container-Image | quay.io/prometheus-operator/prometheus-config-reloader      | v0.93.0                                                                    | fester Image-Tag         | monitoring             |
+| Prometheus                   | Monitoring       | Container-Image | quay.io/prometheus/prometheus                              | v3.13.2-distroless                                                         | fester Image-Tag         | monitoring             |
+| Alertmanager                  | Monitoring       | Container-Image | quay.io/prometheus/alertmanager                            | v0.33.1                                                                    | fester Image-Tag         | monitoring             |
+| Node Exporter                 | Monitoring       | Container-Image | quay.io/prometheus/node-exporter                           | v1.12.1-distroless                                                         | fester Image-Tag         | monitoring             |
+| kube-state-metrics            | Monitoring       | Container-Image | registry.k8s.io/kube-state-metrics/kube-state-metrics      | v2.19.1                                                                    | fester Image-Tag         | monitoring             |
+| Argo CD                       | GitOps           | Container-Image | quay.io/argoproj/argocd                                    | v3.5.0                                                                     | fester Image-Tag         | argocd                 |
+| Dex                            | GitOps           | Container-Image | ghcr.io/dexidp/dex                                          | v2.45.0                                                                    | fester Image-Tag         | argocd                 |
+| Redis                          | GitOps           | Container-Image | public.ecr.aws/docker/library/redis                        | 8.2.3-alpine                                                               | fester Image-Tag         | argocd                 |
+| ingress-nginx Controller       | Ingress          | Container-Image | registry.k8s.io/ingress-nginx/controller                   | v1.15.1@sha256:594ceea76b01c592858f803f9ff4d2cb40542cae2060410b2c95f75907d659e1 | Version + Digest         | ingress-nginx          |
+| metrics-server                 | Cluster-Add-on   | Container-Image | registry.k8s.io/metrics-server/metrics-server               | v0.8.1                                                                     | fester Image-Tag         | kube-system            |
+| ingress-nginx                  | Ingress          | Helm-Chart      | ingress-nginx/ingress-nginx                                 | Chart 4.15.1 / App 1.15.1                                                  | fester Helm-Chart-Tag    | ingress-nginx (deployed) |
+| metrics-server                 | Cluster-Add-on   | Helm-Chart      | metrics-server/metrics-server                                | Chart 3.13.1 / App 0.8.1                                                   | fester Helm-Chart-Tag    | kube-system (deployed) |
+| Monitoring (kube-prometheus-stack) | Monitoring  | Helm-Chart      | prometheus-community/kube-prometheus-stack                  | Chart 88.3.0 / App v0.93.0                                                 | fester Helm-Chart-Tag    | monitoring (deployed)  |
+
+----- Versionierungsstrategie -----
+
+Die finalen Pacman-Anwendungsimages (DEV und PROD) verwenden als Tag den
+vollständigen Commit-SHA des jeweiligen Git-Stands. Dadurch ist für jedes
+deployte Image eindeutig nachvollziehbar, aus welchem Commit es gebaut
+wurde.
+
+Infrastruktur- und Monitoring-Images (MongoDB, BusyBox, Grafana,
+Prometheus-Stack, Argo CD, Dex, Redis, metrics-server) verwenden feste
+Versions-Tags statt :latest, damit sich der Zustand des Clusters
+reproduzieren lässt.
+
+Der ingress-nginx-Controller ist zusätzlich über einen SHA256-Image-Digest
+referenziert, um die Nachvollziehbarkeit über den reinen Versions-Tag
+hinaus zu erhöhen.
+
+Die verwendeten Helm-Charts (ingress-nginx, metrics-server,
+kube-prometheus-stack) sind mit konkreten Chart-Versionen dokumentiert,
+nicht nur mit der enthaltenen App-Version.
+
+In den finalen Pacman-Projekt-Namespaces (pacman-dev, pacman-prod,
+monitoring, argocd, ingress-nginx sowie die projektbezogenen Komponenten
+in kube-system) wird kein :latest-Tag verwendet.
+
+In älteren Demo-/Test-Namespaces außerhalb der finalen Pacman-
+Projektumgebung können vereinzelt :latest-Images vorhanden sein. Diese
+gehören nicht zum finalen Projektstand und werden in diesem Nachweis
+bewusst nicht berücksichtigt.
