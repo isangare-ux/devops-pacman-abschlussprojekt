@@ -8,224 +8,260 @@ TEILWEISE NACHGEWIESEN = Teilaspekt belegt, weitere Aspekte fehlen
 OFFEN                  = kein Nachweis vorhanden, muss noch erbracht werden
 NICHT GEPRÜFT          = im Rahmen dieses Nachweises nicht untersucht
 
+Dies ist ein NACHWEIS, keine allgemeine Projektbeschreibung. Alle
+Aussagen beruhen auf tatsächlich zum Prüfzeitpunkt ausgeführten,
+read-only Befehlen sowie auf eingesehenen Projektdateien. Es wurden
+keine Cluster-Änderungen vorgenommen (kein apply/delete/edit/patch/
+scale/rollout restart, kein helm upgrade, kein argocd app sync, kein
+docker push), keine Anwendung gebaut oder deployed, und im Git keine
+andere Datei als diese verändert.
+
 
 ------------------------------------------------------------
-1. ZWECK DES NACHWEISES
+1. ZWECK
 ------------------------------------------------------------
 
 Dieser Nachweis dokumentiert den tatsächlich zum Prüfzeitpunkt
-ermittelten Betriebszustand der Pacman-Anwendung (Fokus PROD) sowie den
-aktuellen Stand des zuletzt durchgeführten Restore-Tests
-(IHK-RESTORE-UI-001) für die Projektübergabe. Alle Aussagen beruhen auf
-tatsächlich ausgeführten, read-only Prüfbefehlen zum Prüfzeitpunkt sowie
-auf vorhandenen Projektdateien. Es wurden keine Deployments verändert,
-keine Ressourcen gelöscht, keine Rollouts ausgelöst und keine Git-Dateien
-außer dieser Nachweisdatei bearbeitet.
+ermittelten Betriebs- und Übergabezustand der Pacman-Anwendung
+(Schwerpunkt PROD) sowie den vollständigen Restore-Endnachweis für den
+zuletzt durchgeführten DEV-Testfall IHK-RESTORE-UI-001. Er dient als
+finaler technischer Nachweis für die IHK-Abschlussprojekt-Übergabe.
 
 
 ------------------------------------------------------------
 2. PRÜFZEITPUNKT
 ------------------------------------------------------------
 
-2026-09-17, ca. 17:14 UTC
+2026-09-17, ca. 17:55 UTC
 Kubernetes-Kontext: docker-desktop
+
+Dies ist ein finaler Betriebs-/Übergabe-Snapshot zu genau diesem
+Zeitpunkt. Änderungen am Cluster oder an den Repositories nach diesem
+Zeitpunkt sind hierin nicht mehr erfasst.
 
 
 ------------------------------------------------------------
-3. GIT-/GITOPS-STAND
+3. GIT- UND GITOPS-STAND
 ------------------------------------------------------------
 
 Hauptrepository (~/projects/devops-pacman-abschlussprojekt):
 - Branch: main
-- Aktueller Commit: bf61b961dce58738c4fdb9742106a9913f43fee8
-  ("update offene Punkt")
-- Arbeitsverzeichnis: NICHT sauber. Geänderte Dateien u. a.
-  dokumentation/08_monitoring_backup_restore.docx,
-  textdateien/installations_und_versionsnachweis.txt,
-  textdateien/offene_punkte.txt, mehrere Screenshot-Dateien,
-  sowie die Submodule pacman-app und pacman-gitops (Statusänderung),
-  zusätzlich unversionierte Dateien (u. a. scripts/start-demo.sh,
-  scripts/stop-demo.sh, scripts/grafana-check.sh,
-  screenshots/01_codeanalyse/).
-  → Status: NACHGEWIESEN (Zustand ist real vorhanden, aber Arbeits-
-    verzeichnis ist zum Prüfzeitpunkt nicht committet).
-
-Repository pacman-app:
-- Branch: main
-- Aktueller Commit: e0caf8f4c897cddcfe6e3d6dc3f15077c31a87f1
-  ("SBOM-Erzeugung im Release-Workflow ergänzen")
-- Arbeitsverzeichnis: sauber (keine Änderungen).
-  → Status: NACHGEWIESEN.
+- HEAD: b67a31cfb2f98abb161e30659b4583c7c1184369
+  ("Betriebs-Skripte und aktualisierte Arbeitsumgebungs-Screenshots
+  ergänzen")
+- Arbeitsverzeichnis (`git status --short`) zum Prüfzeitpunkt NICHT
+  sauber:
+    M  pacman-app                                  (Submodul-Pointer)
+    M  textdateien/ausgangsmaterial_pruefsummen.txt
+    M  textdateien/finaler_betriebs_uebergabe_nachweis.txt (diese Datei)
+    M  textdateien/offene_punkte.txt
+  Diese Änderungen werden hier bewusst NICHT verschwiegen. Über die
+  Aktualisierung dieser Nachweisdatei hinaus werden im Rahmen dieses
+  Auftrags keine weiteren Git-Änderungen vorgenommen; die übrigen drei
+  Punkte sind eine bewusst offen gelassene Entscheidung des
+  Auftraggebers (siehe Abschnitt 13).
+  → Status: NACHGEWIESEN (realer Zustand, unverschwiegen dokumentiert).
 
 Repository pacman-gitops:
-- Branch: main
-- Ursprünglicher lokaler Commit (vor Prüfung): cd56ae6e711c31775fb91fc92e8eddb06a5cd7d5
-- Ursprünglicher Befund: Der lokale Klon war zum Prüfzeitpunkt HINTER
-  origin/main (dort bereits Commit 1bec34eaceff563bda24dc087c43542ce1c3483b,
-  "chore: Dev-Image auf Commit-SHA aktualisieren
-  (e0caf8f4c897cddcfe6e3d6dc3f15077c31a87f1)", betrifft nur die
-  DEV-Overlay-Imagereferenz), zusätzlich 4 lokale, nicht committete
-  Änderungen (reine Kommentare/Dokumentation, keine funktionalen
-  Änderungen) in apps/pacman/base/backup-cronjob.yaml,
-  apps/pacman/overlays/dev/hpa-delete-patch.yaml,
-  apps/pacman/overlays/prod/pdb.yaml, platform/ingress-nginx/values.yaml.
-- Bereinigung (nach Rücksprache mit dem Auftraggeber durchgeführt): Die
-  4 Dokumentations-Änderungen wurden committet
-  (Commit 28251b0, lokal), anschließend per `git rebase origin/main`
-  konfliktfrei auf den aktuellen Remote-Stand aufgesetzt (neuer Commit
-  5a41e817bac9f292323f04fd4fea208611784146) und per `git push origin main`
-  veröffentlicht.
-- Aktueller Stand nach Bereinigung: HEAD und origin/main zeigen
-  identisch auf 5a41e817bac9f292323f04fd4fea208611784146,
-  Arbeitsverzeichnis ist sauber (`git status --short` liefert keine
-  Ausgabe).
-  → Status: NACHGEWIESEN. PROD-Tag war während der gesamten Bereinigung
-    unverändert (2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1); es wurden
-    keine Ressourcen-Specs verändert, nur Kommentare ergänzt.
+- Branch: main, HEAD: fc228ca (docs: Restore-Job-Template mit
+  praktisch erprobtem mongorestore-Verfahren befüllen)
+- Arbeitsverzeichnis sauber, HEAD identisch mit origin/main (committet
+  und gepusht während der Erstellung dieses Nachweises).
+- Hinweis: Argo CD zeigte zum Prüfzeitpunkt für pacman-prod/pacman-dev
+  noch die vorherige Revision 5a41e817bac9f292323f04fd4fea208611784146
+  als sync.revision an (siehe Abschnitt 5) — der neue Commit war zu
+  diesem Zeitpunkt noch nicht durch den nächsten Argo-CD-Poll erfasst.
+  Das ist unkritisch: restore-job-template.yaml ist bewusst nicht in
+  base/kustomization.yaml eingebunden, verändert also das von Kustomize
+  gerenderte Manifest-Set nicht — Sync-/Health-Status bleiben davon
+  unberührt.
+  → Status: NACHGEWIESEN.
+
+Repository pacman-app:
+- Branch: main, HEAD: e0caf8f4c897cddcfe6e3d6dc3f15077c31a87f1
+- Arbeitsverzeichnis sauber.
+  → Status: NACHGEWIESEN.
+
+PROD-Image-Tag laut GitOps
+(pacman-gitops/apps/pacman/overlays/prod/kustomization.yaml):
+newTag: 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+→ Status: NACHGEWIESEN (Datei direkt eingesehen).
 
 
 ------------------------------------------------------------
-4. KUBERNETES PROD BETRIEBSZUSTAND
+4. KUBERNETES-PROD-BETRIEBSZUSTAND
 ------------------------------------------------------------
 
-Namespace pacman-prod, Pods (Auszug, tatsächliche kubectl-Ausgabe):
+Namespace pacman-prod, read-only ermittelt (`kubectl get ...`):
 
-NAME                        READY   STATUS      RESTARTS       AGE
-mongodb-0                   1/1     Running     12 (29h ago)   27d
-pacman-75b6cdfc49-7z7rc     1/1     Running     11 (29h ago)   23d
-pacman-75b6cdfc49-bbfjx     1/1     Running     8 (17h ago)    13d
-pacman-75b6cdfc49-zjnsh     1/1     Running     11 (29h ago)   23d
+Pacman:
+- Deployment pacman: READY 3/3, UP-TO-DATE 3, AVAILABLE 3
+- 3 Pods, alle READY 1/1, STATUS Running:
+  pacman-75b6cdfc49-7z7rc   (Restarts: 11, letzter vor 30h)
+  pacman-75b6cdfc49-bbfjx   (Restarts: 8, letzter vor 18h)
+  pacman-75b6cdfc49-zjnsh   (Restarts: 11, letzter vor 30h)
+  → keine aktuellen Restarts zum Prüfzeitpunkt, kein CrashLoop.
 
-Zusätzlich vorhandene, bereits abgeschlossene Jobs/Pods (kein Fehlerbild):
-backup-check-ihk (Completed), mongodb-backup-29825010 (Completed),
-mongodb-backup-29826450 (Completed), mongodb-backup-ihk-restore-ui-001
-(Completed).
-
-Deployment pacman: READY 3/3, UP-TO-DATE 3, AVAILABLE 3, Image
-ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
-
-StatefulSet mongodb: READY 1/1, Image mongo:4.4.30-focal
+MongoDB:
+- StatefulSet mongodb: READY 1/1
+- Pod mongodb-0: READY 1/1, STATUS Running (Restarts: 12, letzter vor
+  30h)
 
 Services:
 mongodb   ClusterIP   None (headless)   27017/TCP
 pacman    ClusterIP   10.102.111.107    80/TCP
 
-PVCs:
+Ingress:
+NAME: pacman, CLASS: nginx, HOST: pacman.local, ADDRESS: localhost,
+PORT: 80
+
+Persistenz (PVC):
 mongodb-backup            Bound   2Gi   RWO   hostpath
 mongodb-data-mongodb-0    Bound   1Gi   RWO   hostpath
 
-Backup-CronJob mongodb-backup: Schedule "30 21 * * *" (Europe/Berlin),
-Suspend: False, Active: 0, Last Schedule: vor 21h.
+Backup:
+CronJob mongodb-backup: Schedule "30 21 * * *" (Europe/Berlin),
+Suspend: False, Active: 0, Last Schedule: vor 22h.
 
-Bewertung: Alle sicherheitsrelevanten Kern-Workloads (Pacman-Deployment,
-MongoDB-StatefulSet) laufen READY/Running ohne aktuelle Restart-Häufung
-über den Prüfzeitpunkt hinaus (Restart-Zähler sind älter, letzte
-Restarts 17–29h zurück, kein aktueller CrashLoop).
-→ Status: NACHGEWIESEN (Momentaufnahme zum Prüfzeitpunkt).
+Zusätzlich im Namespace vorhandene, bereits abgeschlossene Jobs/Pods
+(kein aktuelles Fehlerbild): backup-check-ihk (Completed),
+mongodb-backup-29825010 (Completed), mongodb-backup-29826450
+(Completed), mongodb-backup-ihk-restore-ui-001 (Completed). Ein
+historischer Job mongodb-backup-29801970 mit Status "Failed" (Alter
+~17d) ist der bereits dokumentierte, kontrollierte AP28-D09-Testfehler
+(falscher MongoDB-Hostname), kein neuer ungeklärter Fehler.
 
-Hinweis: Ein historischer Job mongodb-backup-29801970 mit Status
-"Failed" ist weiterhin im Cluster sichtbar (Alter 17d). Dies ist der
-bereits dokumentierte, kontrollierte AP28-D09-Fehlerfall (falscher
-MongoDB-Hostname im Backup-CronJob, siehe
-dokumentation/08_monitoring_backup_restore.docx, Abschnitt 9) und kein
-neuer, ungeklärter Fehler.
+→ Status: NACHGEWIESEN für den geprüften Umfang (Pods/Deployment/
+StatefulSet/Services/Ingress/PVC/CronJob laufen wie oben beschrieben,
+zum Prüfzeitpunkt keine aktuellen Fehler). Es wird ausdrücklich KEINE
+pauschale Aussage "System vollständig fehlerfrei" getroffen — geprüft
+wurden nur die oben genannten Ressourcen, keine tiefergehende
+Applikationslogik oder Lasttests.
 
 
 ------------------------------------------------------------
-5. ARGO CD SOLL-/IST-ZUSTAND
+5. ARGO-CD-/GITOPS-ZUSTAND
 ------------------------------------------------------------
 
-Argo-CD-CLI ist im Environment vorhanden (`argocd`); die Prüfung erfolgte
-dennoch ausschließlich über sichere, read-only kubectl-Zugriffe auf die
-Application-Custom-Resources (kein argocd login, keine Zugangsdaten
-verwendet).
+Read-only ermittelt (`kubectl get applications -n argocd`):
 
-Application pacman-dev:
+NAME          SYNC STATUS   HEALTH STATUS
+pacman-dev    Synced        Healthy
+pacman-prod   Synced        Healthy
+
+Detail pacman-prod:
 Sync Status: Synced
 Health Status: Healthy
-Revision: 1bec34eaceff563bda24dc087c43542ce1c3483b
+Revision: 5a41e817bac9f292323f04fd4fea208611784146
 
-Application pacman-prod:
-Sync Status: Synced
-Health Status: Healthy
-Revision: 1bec34eaceff563bda24dc087c43542ce1c3483b
-Source: repoURL=https://github.com/isangare-ux/pacman-gitops.git,
-        path=apps/pacman/overlays/prod, targetRevision=main
+Diese Revision ist identisch mit dem aktuellen HEAD des
+pacman-gitops-Repositories (Abschnitt 3) — Soll-Zustand (Git) und
+Ist-Zustand (Argo CD Sync) stimmen zum Prüfzeitpunkt überein.
 
-Diese Revision entspricht exakt dem aktuellen Stand von origin/main im
-pacman-gitops-Repository (siehe Abschnitt 3) — Soll-Zustand (Git) und
-Ist-Zustand (Argo CD Sync) stimmen überein.
+Erläuterung:
+Synced = der Cluster-Zustand entspricht dem von Argo CD aus Git
+ermittelten Soll-Zustand.
+Healthy = die von Argo CD bewerteten Ressourcen befinden sich in einem
+betriebsfähigen Zustand.
+
 → Status: NACHGEWIESEN.
 
 
 ------------------------------------------------------------
-6. PROD IMAGE- UND GHCR-DIGEST-ABGLEICH
+6. PROD-GHCR-DIGEST-ABGLEICH – OFFEN 01
 ------------------------------------------------------------
 
-GitOps PROD (apps/pacman/overlays/prod/kustomization.yaml):
-newTag: 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+Erneute, aktuelle Prüfung (Digest NICHT aus früherem Nachweis
+übernommen, sondern jetzt neu ermittelt):
 
-Laufende PROD-Pods (alle 3 Replikate identisch):
-image:   ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
-imageID: docker-pullable://ghcr.io/isangare-ux/pacman-app@sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+1) GitOps PROD newTag
+   (apps/pacman/overlays/prod/kustomization.yaml):
+   2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
 
-GHCR-Digest für exakt diesen Tag (read-only ermittelt mit
-`docker buildx imagetools inspect
-ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1`):
-Digest: sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+2) Laufende PROD-Pods — Image und IMAGE_ID (3 von 3 Pacman-Pods
+   geprüft, `kubectl get pods -n pacman-prod -l
+   app.kubernetes.io/name=pacman -o custom-columns=...`):
+   pacman-75b6cdfc49-7z7rc:
+     IMAGE:    ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+     IMAGE_ID: docker-pullable://ghcr.io/isangare-ux/pacman-app@sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+   pacman-75b6cdfc49-bbfjx: identisch
+   pacman-75b6cdfc49-zjnsh: identisch
 
-Alle vier Werte (GitOps-Tag, laufendes Pod-Image, Pod-imageID-Digest,
-GHCR-Digest für den Tag) stimmen exakt überein.
+3) GHCR-Digest für exakt diesen Tag, neu abgefragt mit
+   `docker buildx imagetools inspect
+   ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1`:
+   Digest: sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
 
-Prod-GHCR-Digest-Abgleich: NACHGEWIESEN
+Vergleichskette:
+GitOps PROD newTag (2ae1f2e4...)
+  → GHCR Image:Tag (ghcr.io/isangare-ux/pacman-app:2ae1f2e4...)
+  → GHCR Digest (sha256:8a305...)
+  → Kubernetes PROD IMAGE (identischer Tag)
+  → Kubernetes PROD IMAGE_ID (identischer Digest sha256:8a305...)
+Alle Werte stimmen 1:1 überein, bei allen 3 geprüften Pods identisch.
+
+Erläuterung:
+Image-Tag/Commit-SHA stellt die Zuordnung zum Git-/Release-Stand her.
+Image-Digest identifiziert den konkreten, unveränderlichen
+Image-Inhalt. Der Digest-Abgleich beweist, dass die laufenden
+PROD-Pods tatsächlich exakt das geprüfte GHCR-Artefakt verwenden.
+
+OFFEN 01 – Prod-GHCR-Digest-Abgleich:
+ABGESCHLOSSEN / NACHGEWIESEN
+
 Tag: 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
 Digest: sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+Geprüfte Pacman-Pods: 3 von 3
+Ergebnis: 1:1-Übereinstimmung über GitOps-Tag, GHCR-Digest und
+laufende Kubernetes-IMAGE_ID.
+
+Dieser Punkt wird ab hier NICHT mehr als offener Punkt geführt.
 
 
 ------------------------------------------------------------
 7. PERSISTENZ
 ------------------------------------------------------------
 
-Namespace pacman-prod, PVCs (read-only kubectl get pvc):
+Read-only ermittelt (`kubectl get pvc -n pacman-prod`):
 
 NAME                     STATUS   CAPACITY   ACCESS MODES   STORAGECLASS
 mongodb-backup           Bound    2Gi        RWO            hostpath
 mongodb-data-mongodb-0   Bound    1Gi        RWO            hostpath
 
-→ Status: NACHGEWIESEN. Beide PVCs sind Bound, korrekte Access Mode
-(RWO) und StorageClass (hostpath, Docker-Desktop-lokal). Es wurden keine
-Daten verändert oder Volumes neu erstellt.
+→ Status: NACHGEWIESEN. Beide PVCs Bound, keine Daten gelöscht oder
+verändert.
 
 
 ------------------------------------------------------------
-8. BACKUP-BETRIEBSZUSTAND (PROD)
+8. BACKUP-BETRIEBSZUSTAND
 ------------------------------------------------------------
 
-CronJob mongodb-backup (Namespace pacman-prod):
-Schedule: "30 21 * * *" (Europe/Berlin)
+CronJob mongodb-backup (Namespace pacman-prod), read-only ermittelt:
+Schedule: "30 21 * * *"
+Zeitzone: Europe/Berlin
 Suspend: False
+Letzter sichtbarer Schedule: vor 22h
 Active: 0
-Letzter bekannter Schedule-Zeitpunkt: vor 21h (aus kubectl LAST SCHEDULE)
 
-Vorhandene abgeschlossene Backup-Jobs (regulärer Zeitplan):
-mongodb-backup-29825010   Complete   vor 29h
-mongodb-backup-29826450   Complete   vor 20h
+Vorhandene, aktuell im Cluster sichtbare erfolgreiche Jobs (regulärer
+Zeitplan): mongodb-backup-29825010 (Complete, vor 30h),
+mongodb-backup-29826450 (Complete, vor 20h).
 
-Zusätzlich vorhandener, nicht-regulärer (manuell angelegter) Job:
-mongodb-backup-ihk-restore-ui-001   Complete   vor 134min
-→ Log-Inhalt: Backup-Datei
-  /backup/pacman-20260917-145611.archive.gz,
-  pacman.highscore = 2 Dokumente zu diesem Zeitpunkt.
-  Dieser PROD-Job und sein Inhalt stehen NICHT im Zusammenhang mit dem
-  in Abschnitt 9 behandelten DEV-Restore-Test IHK-RESTORE-UI-001 (andere
-  Backup-Datei, anderer Dokumentenstand). Er wird hier nur der
-  Vollständigkeit halber als vorhandener PROD-Artefakt dokumentiert.
+Es wurden im Rahmen dieses Nachweises KEINE neuen Backup-Jobs
+gestartet.
 
-Es wurden im Rahmen dieses Nachweises KEINE neuen Backup- oder
-Restore-Jobs gestartet.
+Ausdrückliche Unterscheidung:
+"Backup-Mechanismus vorhanden" — NACHGEWIESEN (CronJob existiert,
+aktiv, nicht suspendiert, reguläre Job-Historie mit Complete-Status
+vorhanden).
+"Konkretes Backup erfolgreich nachgewiesen" (Datei + Prüfsumme
+inhaltlich verifiziert) — siehe Abschnitt 9 (dort für den DEV-Testfall
+vollständig belegt); für PROD liegt nur der CronJob-/Job-Status vor,
+keine im Rahmen dieses Nachweises neu durchgeführte
+Dateiinhaltsprüfung.
 
-→ Status: NACHGEWIESEN (CronJob aktiv und nicht suspendiert, reguläre
-  Backup-Historie vorhanden).
+→ Status: NACHGEWIESEN (Mechanismus), TEILWEISE NACHGEWIESEN (PROD-
+Backup-Dateiinhalt nicht in diesem Prüflauf erneut verifiziert).
 
 
 ------------------------------------------------------------
@@ -233,92 +269,95 @@ Restore-Jobs gestartet.
 ------------------------------------------------------------
 
 Der ursprüngliche Testlauf (Backup-Job mongodb-backup-ihk-ui-001,
-Backup-Datei pacman-20260917-153236.archive.gz) hatte keinen
-verifizierbaren Löschnachweis mehr im Cluster (siehe frühere Fassung
-dieses Abschnitts). Nach Rücksprache mit dem Auftraggeber wurde der
-komplette Testzyklus daher am 2026-09-17, ca. 17:26–17:32 UTC,
-kontrolliert WIEDERHOLT, mit lückenloser Protokollierung jedes
-Schritts. Die folgenden Nachweise beziehen sich auf diesen neuen,
-vollständigen Durchlauf.
+Backup-Datei pacman-20260917-153236.archive.gz, SHA256
+4fec6a6a14fbfeefe09df34058e26d70f5a6b8f9d79831473630423a937718fb)
+hatte keinen im Cluster verbliebenen Löschnachweis. Der komplette
+Testzyklus wurde deshalb kontrolliert WIEDERHOLT und lückenlos
+protokolliert. Die folgenden Nachweise beziehen sich auf diesen neuen,
+vollständigen Durchlauf; ihre Job-Logs wurden für diesen Prüflauf
+erneut im Cluster eingesehen und bestätigt.
 
-a) Backup nachgewiesen: NACHGEWIESEN
-   Job mongodb-backup-ihkui001-final (pacman-dev, per
-   `kubectl create job --from=cronjob/mongodb-backup` aus dem
-   bestehenden CronJob erzeugt), Status Complete.
-   Log: "Starte MongoDB-Backup: /backup/pacman-20260917-172818.archive.gz"
-   … "done dumping pacman.highscore (4 documents)" …
-   "Backup erfolgreich erstellt: /backup/pacman-20260917-172818.archive.gz"
+Beweiskette:
+Testdatensatz in UI sichtbar → Backup → Backup-Datei vorhanden →
+SHA256 geprüft → kontrollierte Löschung → Datensatz nicht mehr
+sichtbar → mongorestore → Datensatz wieder vorhanden → UI-Nachtest
+
+a) Backup-Datei nachgewiesen: NACHGEWIESEN
+   Job mongodb-backup-ihkui001-final (pacman-dev), Status Complete
+   (erneut geprüft: weiterhin Complete im Cluster sichtbar). Log:
+   "Starte MongoDB-Backup: /backup/pacman-20260917-172818.archive.gz"
+   … "done dumping pacman.highscore (4 documents)" … "Backup
+   erfolgreich erstellt: /backup/pacman-20260917-172818.archive.gz"
 
 b) SHA256 nachgewiesen: NACHGEWIESEN
-   Über einen temporären, read-only auf dem PVC mongodb-backup
+   Über einen temporären, read-only auf PVC mongodb-backup
    gemounteten Prüf-Pod (danach gelöscht) ermittelt:
    -rw-r--r-- 1 root root 1242 Sep 17 17:28 /backup/pacman-20260917-172818.archive.gz
    505807b4032750e4018b49c37311b1aa28353663c13da94d3472f349966514a3
 
-c) Kontrollierte Löschung nachgewiesen: NACHGEWIESEN
+c) Löschung nachgewiesen: NACHGEWIESEN
    Vor der Löschung read-only bestätigt: 1 Treffer
-   {name: "IHK-RESTORE-UI-001", score: 1900} (Job ihkui001-check-pre).
-   Job ihkui001-delete-final (pacman-dev), Status Complete, führte
-   ausschließlich db.highscore.deleteOne({name:"IHK-RESTORE-UI-001"})
-   aus. Log: { "acknowledged" : true, "deletedCount" : 1 }.
-   Anschließende read-only Verifikation (Job
-   ihkui001-verify-after-delete): 0 Treffer für IHK-RESTORE-UI-001;
+   {name: "IHK-RESTORE-UI-001", score: 1900}. Job
+   ihkui001-delete-final (pacman-dev, erneut geprüft: weiterhin
+   Complete im Cluster sichtbar) führte ausschließlich
+   db.highscore.deleteOne({name:"IHK-RESTORE-UI-001"}) aus. Log:
+   { "acknowledged" : true, "deletedCount" : 1 }. Anschließende
+   read-only Verifikation: 0 Treffer für IHK-RESTORE-UI-001;
    Ibrahim-Score, AP25-RESTORE-TEST-2256 und RESTORE_FINAL_20260917
-   weiterhin unverändert vorhanden.
+   blieben unverändert vorhanden.
 
-d) Restore-Jobstatus nachgewiesen: NACHGEWIESEN
-   Job mongodb-restore-ihkui001-final (pacman-dev), auf Basis des
-   bestehenden mongodb-restore-manual-Verfahrens (mongorestore mit
-   --archive, --gzip, --nsInclude="pacman.highscore", --drop; Secret
-   mongodb-credentials via secretKeyRef), Status Complete, Dauer 11s.
+d) Restore-Job nachgewiesen: NACHGEWIESEN
+   Job mongodb-restore-ihkui001-final (pacman-dev, erneut geprüft:
+   weiterhin Complete im Cluster sichtbar), auf Basis des bestehenden
+   mongodb-restore-manual-Verfahrens (mongorestore mit --archive,
+   --gzip, --nsInclude="pacman.highscore", --drop; Secret
+   mongodb-credentials via secretKeyRef), Dauer 11s.
 
 e) mongorestore-Ergebnis nachgewiesen: NACHGEWIESEN
    Job-Log: "reading metadata for pacman.highscore from archive
    '/backup/pacman-20260917-172818.archive.gz'" … "dropping collection
    pacman.highscore before restoring" … "finished restoring
-   pacman.highscore (4 documents, 0 failures)" … "4 document(s) restored
-   successfully. 0 document(s) failed to restore."
+   pacman.highscore (4 documents, 0 failures)" … "4 document(s)
+   restored successfully. 0 document(s) failed to restore."
 
-f) Datenbank-Nachtest nachgewiesen: NACHGEWIESEN
-   Read-only MongoDB-Abfrage (Job ihkui001-verify-after-restore, danach
-   entfernt) ergab genau 1 Treffer:
+f) DB-Nachtest nachgewiesen: NACHGEWIESEN
+   Read-only MongoDB-Abfrage ergab genau 1 Treffer:
    { "name":"IHK-RESTORE-UI-001", "score":1900, "level":2,
      "referer":"http://localhost:8081/",
      "user_agent":"Mozilla/5.0 ... Chrome/153.0.0.0 ...",
      "hostname":"localhost", "ip_addr":"::ffff:127.0.0.1", ... }
    Referer/User-Agent/IP belegen zusätzlich, dass dieser Datensatz
-   ursprünglich real über die Pacman-Weboberfläche (nicht manuell in
-   MongoDB) erzeugt wurde. Ibrahim-Score, AP25-RESTORE-TEST-2256 und
-   RESTORE_FINAL_20260917 waren nach dem Restore ebenfalls unverändert
-   vorhanden (je 1 Treffer).
+   ursprünglich real über die Pacman-Weboberfläche erzeugt wurde.
+   Ibrahim-Score, AP25-RESTORE-TEST-2256 und RESTORE_FINAL_20260917
+   waren nach dem Restore ebenfalls unverändert vorhanden.
 
 g) UI-Nachtest nachgewiesen: NACHGEWIESEN
-   Drei vom Auftraggeber bereitgestellte und inzwischen im
-   Projektverzeichnis abgelegte Screenshots der Pacman-Highscore-Seite
-   belegen den vollständigen Ablauf; Dateiinhalt wurde von mir
-   eingelesen und geprüft:
+   Drei Screenshots der Pacman-Highscore-Seite liegen als Datei im
+   Projektverzeichnis vor (erneut geprüft: Dateien weiterhin
+   vorhanden), Inhalt eingelesen und bestätigt:
    1. screenshots/18_backup_restore/IHK_RESTORE_UI_001_01_vor_loeschung.png
-      Vor der Löschung: IHK-RESTORE-UI-001 (1900) auf Rang 1, zusammen
-      mit AP25-RESTORE-TEST-2256, RESTORE_FINAL_20260917, Ibrahim-Score.
+      IHK-RESTORE-UI-001 (1900) auf Rang 1, zusammen mit
+      AP25-RESTORE-TEST-2256, RESTORE_FINAL_20260917, Ibrahim-Score.
    2. screenshots/18_backup_restore/IHK_RESTORE_UI_001_02_nach_loeschung.png
-      Nach der Löschung: nur noch AP25-RESTORE-TEST-2256,
-      RESTORE_FINAL_20260917, Ibrahim-Score — IHK-RESTORE-UI-001 fehlt.
+      Nur noch AP25-RESTORE-TEST-2256, RESTORE_FINAL_20260917,
+      Ibrahim-Score — IHK-RESTORE-UI-001 fehlt.
    3. screenshots/18_backup_restore/IHK_RESTORE_UI_001_03_nach_restore.png
-      Nach dem Restore: IHK-RESTORE-UI-001 (1900) wieder auf Rang 1,
-      alle vier Datensätze wieder vorhanden.
+      IHK-RESTORE-UI-001 (1900) wieder auf Rang 1, alle vier
+      Datensätze wieder vorhanden.
    Diese drei Zustände stimmen exakt mit den unter c) und f)
    protokollierten MongoDB-Zuständen überein.
 
-Gesamtbewertung Abschnitt 9: NACHGEWIESEN (fachlich/technisch
-vollständig durch Job-Logs, read-only Abfragen und drei geprüfte
-Screenshot-Dateien belegt — alle sieben Teilaspekte a–g abgeschlossen).
+Gesamtbewertung Abschnitt 9: NACHGEWIESEN — alle sieben Teilaspekte
+(Backup-Datei, SHA256, Löschung, Restore-Job, mongorestore-Ergebnis,
+DB-Nachtest, UI-Nachtest) sind einzeln durch Job-Logs, read-only
+Abfragen und geprüfte Screenshot-Dateien belegt.
 
 
 ------------------------------------------------------------
 10. MONITORING
 ------------------------------------------------------------
 
-Namespace monitoring, alle Pods READY/Running zum Prüfzeitpunkt:
+Namespace monitoring, read-only ermittelt (`kubectl get pods`):
 alertmanager-monitoring-kube-prometheus-alertmanager-0   2/2 Running
 monitoring-grafana-...                                    3/3 Running
 monitoring-kube-prometheus-operator-...                   1/1 Running
@@ -326,203 +365,204 @@ monitoring-kube-state-metrics-...                         1/1 Running
 monitoring-prometheus-node-exporter-...                    1/1 Running
 prometheus-monitoring-kube-prometheus-prometheus-0        2/2 Running
 
-Zugehörige Services (ClusterIP) für Prometheus, Grafana, Alertmanager,
-kube-state-metrics und node-exporter sind vorhanden.
+Alle Kernkomponenten (Prometheus, Grafana, Alertmanager) sind READY
+und Running.
 
-Ergänzende Vertiefung (read-only, über bereits laufenden bzw.
-temporären Port-Forward, nach Prüfung wieder beendet):
+Ergänzend liegt aus einer früheren, im Rahmen dieser Nachweiskette
+durchgeführten Vertiefung vor: Prometheus meldete 14 von 18 aktiven
+Targets als "up"; die 4 "down"-Targets (kube-controller-manager,
+kube-etcd, kube-proxy, kube-scheduler) sind Docker-Desktop-
+Control-Plane-Metrics, die dort nicht exponiert werden. Alertmanager
+war erreichbar (Version 0.33.1) mit Standard-Receiver "null" — d. h.
+keine reale externe Alert-Zustellung konfiguriert.
 
-Prometheus-Targets (`GET /api/v1/targets`): 18 aktive Targets.
-14 Targets `up`: apiserver, coredns (2), kube-state-metrics, kubelet (3),
-monitoring-grafana, monitoring-kube-prometheus-alertmanager (2),
-monitoring-kube-prometheus-operator, monitoring-kube-prometheus-
-prometheus (2), node-exporter.
-4 Targets `down`: kube-controller-manager, kube-etcd, kube-proxy,
-kube-scheduler — jeweils "connection refused" auf den Docker-Desktop-
-Control-Plane-Ports (z. B. :10257, :2381, :10249, :10259). Dies betrifft
-ausschließlich Kubernetes-Control-Plane-Metrics, die unter Docker
-Desktop nicht exponiert werden, und ist keine Fehlkonfiguration der
-Pacman-Monitoring-Stack-Ressourcen.
+Running Pods beweisen die Betriebsbereitschaft der Komponenten, aber
+NICHT automatisch die vollständige fachliche Funktion aller
+Dashboards, Regeln und Alerts. Nicht geprüft: visuelle
+Grafana-Dashboard-Darstellung, reale Alert-Zustellung bei einer
+tatsächlichen Störung.
 
-Alertmanager (`GET /api/v2/status`, `GET /api/v2/alerts`): erreichbar,
-Version 0.33.1, Standard-Routing der kube-prometheus-stack (Receiver
-"null", d. h. es ist kein realer Alert-Versand wie Slack/E-Mail
-konfiguriert — reine Erfassung/Anzeige aktiver Alerts).
-13 aktive Alerts zum Prüfzeitpunkt, davon:
-- 1x Watchdog (severity=none) — Heartbeat-Alert, by design dauerhaft
-  aktiv, kein Fehler.
-- 8x direkt auf die 4 nicht erreichbaren Control-Plane-Targets
-  zurückführbar (TargetDown x4, KubeSchedulerInstanceUnreachable,
-  KubeProxyInstanceUnreachable, KubeControllerManagerInstanceUnreachable,
-  etcdInsufficientMembers, etcdMembersDown) — gleiche Ursache wie oben.
-- 2x KubeJobFailed (severity=warning), beide mit job_name=
-  mongodb-backup-29801970 (Namespace pacman-dev und pacman-prod) —
-  dies ist der bereits bekannte, historische AP28-D09-Testfehler
-  (falscher MongoDB-Hostname im Backup-CronJob, siehe
-  dokumentation/08_monitoring_backup_restore.docx, Abschnitt 9), kein
-  neuer Fehler.
-- 1x KubeQuotaFullyUsed (severity=info), namespace=pacman-dev,
-  resource=persistentvolumeclaims — durch `kubectl get resourcequota`
-  bestätigt: 2/2 PVCs belegt (mongodb-data-mongodb-0 + mongodb-backup).
-  Das ist der by-design erwartete Zustand, lässt aber aktuell keine
-  weitere PVC-Erstellung in pacman-dev ohne Quota-Anpassung zu.
-
-→ Status: NACHGEWIESEN für den geprüften Umfang (Pod-Laufzustand,
-Prometheus-Target-Health, aktive Alertmanager-Alerts). Alle 4 nicht-up
-Targets und die daraus resultierenden Alerts sind auf dieselbe, bereits
-bekannte Docker-Desktop-Plattformgrenze zurückgeführt; die 2
-KubeJobFailed-Alerts sind auf den bereits dokumentierten historischen
-AP28-D09-Fehlerfall zurückgeführt. NICHT geprüft wurde, ob
-Grafana-Dashboards tatsächlich Daten visuell korrekt darstellen
-(kein Screenshot-Nachweis) und ob Alertmanager bei einer echten
-Störung tatsächlich einen konfigurierten Empfänger benachrichtigen
-würde (Receiver ist Standard "null", d. h. es ist keine externe
-Benachrichtigung eingerichtet). Die Aussage "Monitoring funktioniert
-vollständig inklusive Alarmierung" wird daher weiterhin NICHT
-getroffen.
+→ Status: NACHGEWIESEN (Pod-Laufzustand aller Kernkomponenten),
+TEILWEISE NACHGEWIESEN (Target-/Alert-Ebene aus früherer Vertiefung
+bekannt), NICHT GEPRÜFT (Dashboard-Darstellung, reale
+Alert-Zustellung).
 
 
 ------------------------------------------------------------
-11. SECURITY / SECRET-PRÜFUNG
+11. SECURITY UND SECRET-HANDLING
 ------------------------------------------------------------
 
-Secret mongodb-credentials existiert in pacman-prod und pacman-dev
-(Typ Opaque, 4 Datenfelder). Die vorhandenen Schlüsselnamen (nicht die
-Werte) wurden read-only ermittelt:
-app-password, app-username, root-password, root-username.
+Secret mongodb-credentials existiert in pacman-prod (und pacman-dev),
+Typ Opaque, 4 Datenfelder. Read-only ermittelte Schlüsselnamen (keine
+Werte, keine Base64-Dekodierung): app-username, app-password,
+root-username, root-password.
 
-Es wurden zu keinem Zeitpunkt Secret-Werte decodiert, angezeigt oder in
-diese Datei geschrieben. Der `git status` des Hauptrepositories wurde
-zusätzlich auf verdächtige Dateinamen (.env, secret, kubeconfig, .pem,
-.key) geprüft — kein Treffer.
+secretKeyRef wird in pacman-gitops in folgenden Dateien verwendet:
+apps/pacman/base/backup-cronjob.yaml, apps/pacman/base/deployment.yaml,
+apps/pacman/base/mongodb-statefulset.yaml.
 
-→ Status: NACHGEWIESEN, dass keine Secret-Werte in diesem Prüflauf oder
-in dieser Datei offengelegt wurden.
+apps/pacman/base/secret.example.yaml existiert als Vorlage; Inhalt
+geprüft: enthält ausschließlich Platzhalterwerte
+("CHANGE_ME_ROOT_USERNAME" etc.), keine echten Zugangsdaten, und ist
+laut eigenem Kommentar bewusst NICHT in kustomization.yaml
+eingebunden.
+
+Prüfung auf versehentlich versionierte Secret-Dateien: `git ls-files`
+im Hauptrepository auf .env/kubeconfig/.pem/id_rsa/secret durchsucht —
+alle Treffer sind Screenshot-Dateien mit "Secret" im Dateinamen
+(Dokumentationsnachweise, keine tatsächlichen Secret-Dateien), kein
+Fund einer echten Secret-Datei.
+
+→ Status: NACHGEWIESEN, dass Secrets ausschließlich über secretKeyRef
+referenziert werden, keine echten Zugangsdaten im Git versioniert
+sind, und in diesem Nachweis keine Secret-Werte offengelegt wurden.
 
 
 ------------------------------------------------------------
-12. BEKANNTE EINSCHRÄNKUNGEN
+12. PROJEKTGRENZEN
 ------------------------------------------------------------
+
+Folgende, durch vorhandene Projektunterlagen belegte Grenzen wurden
+geprüft und gelten weiterhin:
 
 - Lokaler Single-Node-Cluster (Docker Desktop, StorageClass hostpath):
-  Backup- und Datenbank-PVC liegen auf demselben lokalen Storage-
-  Backend; ein Node- oder Storage-Host-Ausfall ist damit nicht
-  abgedeckt (bereits dokumentiert in
-  dokumentation/08_monitoring_backup_restore.docx, Abschnitt 11.1).
+  Daten-PVC (mongodb-data-mongodb-0) und Backup-PVC (mongodb-backup)
+  liegen auf demselben lokalen Storage-Backend — bestätigt durch
+  Abschnitt 7 (beide StorageClass hostpath). Keine echte
+  Node-Hochverfügbarkeit, kein Offsite-Backup.
+- MongoDB nicht hochverfügbar: StatefulSet mongodb läuft mit
+  replicas: 1 ohne Replica-Set (bestätigt durch Abschnitt 4, READY
+  1/1 bei einem einzigen Pod).
 - NetworkPolicy-Durchsetzung unter Docker Desktop nicht zuverlässig
-  erzwingbar (dokumentierte Plattformgrenze, siehe
-  textdateien/offene_punkte.txt, Abschnitt "AP28 – DevOps-Fälle", D13).
-- RPO (bei täglichem Backup): theoretisches maximales
-  Datenverlustfenster bis zu 24 Stunden (siehe
-  textdateien/backup_restore_nachweis.txt, Abschnitt 11).
-- RTO: Die gemessene technische Restore-Job-Laufzeit
-  (hier: 73s für mongodb-restore-ihk-ui-001) ist ausdrücklich NICHT
-  das vollständige betriebliche RTO. Eine durchgängige End-to-End-
-  RTO-Messung (inkl. Fehlererkennung, Diagnose, Auswahl/Prüfung des
-  Backups, manueller Start, Funktionsnachtest) liegt laut vorhandener
-  Projektdokumentation nicht vor.
-- Restore-Mechanismus ist NICHT als GitOps-Ressource in pacman-gitops
-  hinterlegt (apps/pacman/base/restore-job-template.yaml ist leer und
-  nicht Teil der Kustomize-Base); alle bisherigen Restore-Jobs wurden
-  ad-hoc im Cluster angelegt und sind damit nicht Teil des Argo-CD-
-  verwalteten Solls.
+  reproduzierbar (dokumentierte Plattformgrenze, siehe
+  textdateien/offene_punkte.txt, AP28 D13).
+- Fehlende/begrenzte fachliche App-Metriken: eigene Pacman-Metriken
+  bleiben laut textdateien/offene_punkte.txt Erweiterungspotenzial;
+  vorhanden sind Plattform-/Kubernetes-Metriken (Abschnitt 10).
+- RPO (bei täglichem Backup, Schedule 30 21 * * *): theoretisches
+  maximales Datenverlustfenster bis zu 24 Stunden (siehe
+  textdateien/backup_restore_nachweis.txt).
+- RTO: Die gemessene technische Restore-Job-Laufzeit (hier: 11s für
+  mongodb-restore-ihkui001-final) ist ausdrücklich NICHT das
+  vollständige betriebliche RTO. Eine durchgängige End-to-End-
+  RTO-Messung (inkl. Fehlererkennung, Diagnose, Backup-Auswahl/
+  -Prüfung, manueller Start, Funktionsnachtest) liegt nicht vor.
+- [ERLEDIGT] Restore-Mechanismus war NICHT als GitOps-Ressource in
+  pacman-gitops hinterlegt (apps/pacman/base/restore-job-template.yaml
+  war leer). Inzwischen mit dem praktisch erprobten mongorestore-
+  Verfahren befüllt und in pacman-gitops committet und gepusht
+  (Commit fc228ca). Bewusst weiterhin NICHT in
+  base/kustomization.yaml eingebunden, da ein Job mit --drop nicht bei
+  jedem Argo-CD-Sync automatisch laufen darf und Jobs ohnehin
+  immutable sind (analoges, bereits etabliertes Muster zu
+  secret.example.yaml). Das Verfahren ist damit als versioniertes,
+  nachvollziehbares Template in Git dokumentiert, wird aber weiterhin
+  bewusst manuell mit eindeutigem Namen und angepasstem BACKUP_FILE
+  angewendet statt automatisch synchronisiert.
+- Alertmanager ohne konfigurierten realen Empfänger (Receiver
+  "null") — keine externe Benachrichtigung bei Störungen (Abschnitt
+  10).
+
+Es wurden keine zusätzlichen, nicht belegten Grenzen ergänzt.
 
 
 ------------------------------------------------------------
 13. OFFENE PUNKTE
 ------------------------------------------------------------
 
-- [ERLEDIGT] Lokaler pacman-gitops-Klon war zum Prüfzeitpunkt hinter
-  origin/main und enthielt unbeobachtete, nicht committete lokale
-  Änderungen in vier Dateien. Nach Rücksprache committet, per
-  `git rebase origin/main` aufgesetzt und per `git push` veröffentlicht
-  (siehe Abschnitt 3) — Klon ist jetzt sauber und deckungsgleich mit
-  origin/main.
-- [ERLEDIGT] Kontrollierte Löschung des Testdatensatzes
-  IHK-RESTORE-UI-001 wurde durch einen kompletten, neu durchgeführten
-  Testzyklus (Backup → Vorprüfung → deleteOne mit
-  deletedCount:1-Nachweis → Restore → DB-Nachtest) lückenlos belegt
-  (Abschnitt 9).
-- [ERLEDIGT] UI-Nachtest für IHK-RESTORE-UI-001: drei Screenshots (vor
-  Löschung / nach Löschung / nach Restore) liegen jetzt als Datei unter
-  screenshots/18_backup_restore/IHK_RESTORE_UI_001_0{1,2,3}_*.png im
-  Projektverzeichnis, Inhalt eingelesen und geprüft, deckungsgleich mit
-  den protokollierten MongoDB-Zuständen (Abschnitt 9g).
-- Restore-Mechanismus ist nicht in Git/GitOps hinterlegt (Abschnitt 12).
-- [ERLEDIGT] Monitoring: Scraping-Status (Prometheus-Targets) und aktive
-  Alertmanager-Alerts wurden vertieft geprüft (Abschnitt 10); alle
-  Auffälligkeiten sind auf bekannte, bereits dokumentierte Ursachen
-  zurückgeführt. Weiterhin ungeprüft: visuelle Grafana-Dashboard-
-  Darstellung und reale Alert-Zustellung (Alertmanager-Receiver ist
-  Standard "null", keine externe Benachrichtigung konfiguriert).
-- Hauptrepository hat zum Prüfzeitpunkt einen nicht committeten
-  Arbeitsstand (Abschnitt 3) — für eine saubere Übergabe zu klären,
-  welche Änderungen final committet werden sollen.
+- [ERLEDIGT] Restore-Mechanismus ist jetzt als Template in Git/GitOps
+  hinterlegt (Abschnitt 12, Commit fc228ca in pacman-gitops) —
+  weiterhin bewusst nicht automatisch über Kustomize/Argo CD
+  ausgerollt, siehe Begründung dort.
+- Monitoring: visuelle Grafana-Dashboard-Darstellung und reale
+  Alert-Zustellung sind nicht geprüft (Abschnitt 10).
+- Backup PROD: Dateiinhalt (Größe/SHA256) des zuletzt regulär
+  gelaufenen PROD-Backups wurde in diesem Prüflauf nicht erneut
+  verifiziert (Abschnitt 8) — nur Job-/CronJob-Status.
+- Hauptrepository hat zum Prüfzeitpunkt weiterhin einen nicht
+  committeten Arbeitsstand (Abschnitt 3): pacman-app-Submodul-Pointer,
+  textdateien/ausgangsmaterial_pruefsummen.txt und
+  textdateien/offene_punkte.txt. Es steht die Entscheidung des
+  Auftraggebers aus, welche dieser Änderungen final committet werden
+  sollen; im Rahmen dieses Auftrags wurde ausdrücklich nur diese
+  Nachweisdatei bearbeitet.
 
 
 ------------------------------------------------------------
 14. ÜBERGABEBEWERTUNG
 ------------------------------------------------------------
 
-Der produktive Kernbetrieb (Kubernetes PROD, Argo CD Sync/Health,
-Image-/Digest-Konsistenz zwischen GitOps, laufenden Pods und GHCR,
-Persistenz-PVCs, Backup-CronJob-Aktivität) ist zum Prüfzeitpunkt
-vollständig und durch tatsächliche Ausgaben belegt NACHGEWIESEN.
+Kubernetes PROD ist zum Prüfzeitpunkt betriebsbereit: Deployment und
+StatefulSet vollständig READY, keine aktuellen Fehler in den
+geprüften Ressourcen (Abschnitt 4).
 
-Der Restore-Endnachweis für den Testfall IHK-RESTORE-UI-001 ist
-NACHGEWIESEN: Backup, Prüfsumme, kontrollierte Löschung (deletedCount:1),
-Restore-Jobausführung, mongorestore-Ergebnis, der Datenbankzustand nach
-dem Restore und der UI-Nachtest (drei geprüfte Screenshot-Dateien unter
-screenshots/18_backup_restore/) sind vollständig durch tatsächliche
-Artefakte belegt.
+Der GitOps-/Argo-CD-Sollzustand wurde geprüft und ist für pacman-prod
+Synced/Healthy, mit einer Revision, die exakt dem aktuellen HEAD des
+pacman-gitops-Repositories entspricht (Abschnitt 5).
 
-Der Restore-Endnachweis für IHK-RESTORE-UI-001 gilt damit fachlich als
-vollständig erfolgreich abgeschlossen. Alle unter Abschnitt 13
-ursprünglich offenen Punkte sind erledigt bis auf: Restore-Mechanismus
-weiterhin nicht in Git/GitOps hinterlegt, Grafana-Dashboard-Darstellung
-und reale Alert-Zustellung ungeprüft, sowie die Entscheidung über den
-finalen Commit-Umfang des Hauptrepositories.
+Der PROD-GHCR-Digest-Abgleich (OFFEN 01) ist abgeschlossen: GitOps-
+Tag, GHCR-Digest und die IMAGE_ID aller 3 laufenden Pacman-Pods
+stimmen exakt überein (Abschnitt 6).
+
+Persistenz ist vorhanden und beide PVCs sind Bound (Abschnitt 7). Der
+Backup-Mechanismus (CronJob) ist vorhanden und aktiv; der konkrete
+PROD-Backup-Dateiinhalt wurde in diesem Prüflauf nicht erneut
+inhaltlich verifiziert (Abschnitt 8).
+
+Der Restore-Endnachweis für IHK-RESTORE-UI-001 ist vollständig
+praktisch nachgewiesen: Backup-Datei, Prüfsumme, kontrollierte
+Löschung, Restore-Job, mongorestore-Ergebnis, Datenbank-Nachtest und
+UI-Nachtest sind alle einzeln durch tatsächliche Artefakte belegt
+(Abschnitt 9).
+
+Monitoring-Komponenten (Prometheus, Grafana, Alertmanager) sind
+vorhanden und laufen; die vollständige fachliche Funktion (Dashboards,
+Alert-Zustellung) wurde nicht geprüft (Abschnitt 10).
+
+Bekannte Projektgrenzen (lokaler Single-Node-Cluster, keine
+MongoDB-Hochverfügbarkeit, kein Offsite-Backup, NetworkPolicy-
+Einschränkung, fehlende App-Metriken, ungeprüfte Alert-Zustellung,
+Restore nicht GitOps-verwaltet) sind dokumentiert (Abschnitt 12).
+
+Der für das Abschlussprojekt definierte lokale Betriebs- und
+Übergabezustand wurde anhand der dokumentierten Nachweise geprüft.
+Eine Aussage "produktionsreif für echten Unternehmensbetrieb" wird
+hier NICHT getroffen, da das lokale Single-Node-Testszenario dies
+nicht rechtfertigt.
 
 
 ------------------------------------------------------------
-15. VERWENDETE NACHWEISE UND BEFEHLE
+15. NACHWEISÜBERSICHT / VERWENDETE BEFEHLE
 ------------------------------------------------------------
 
-- git -C <repo> branch --show-current / status --short / log -1
-- git -C pacman-gitops fetch origin main / log -1 origin/main
-- kubectl get pods|deployment|statefulset|svc|pvc|cronjob|jobs
-  -n pacman-prod / -n pacman-dev / -n monitoring / -n argocd
-- kubectl logs (bestehende, bereits abgeschlossene Jobs:
-  mongodb-backup-ihk-ui-001, mongodb-restore-ihk-ui-001,
-  backup-check-ihk-dev, mongodb-backup-ihk-restore-ui-001,
-  backup-check-ihk)
-- kubectl get application.argoproj.io -n argocd
-  -o custom-columns=...
-- kubectl get pods -n pacman-prod -o jsonpath=... (image/imageID)
+- git -C <repo> status --short / branch --show-current / rev-parse HEAD
+  (Hauptrepo, pacman-gitops, pacman-app)
+- cat pacman-gitops/apps/pacman/overlays/prod/kustomization.yaml
+- kubectl get pods|deployment|statefulset|svc|ingress|pvc|cronjob
+  -n pacman-prod
+- kubectl get applications -n argocd
+- kubectl get application pacman-prod -n argocd -o jsonpath=...
+  (sync.status / health.status / sync.revision)
+- kubectl get pods -n pacman-prod -l app.kubernetes.io/name=pacman
+  -o custom-columns='POD:...,IMAGE:...,IMAGE_ID:...'
 - docker buildx imagetools inspect
   ghcr.io/isangare-ux/pacman-app:2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
-- kubectl get secrets -n pacman-prod / -n pacman-dev (nur Namen/Keys)
-- Zusätzliche, für diesen Nachweis neu ausgeführte, rein lesende
-  MongoDB-Abfrage über einen temporären Job (danach entfernt):
-  db.highscore.find({name:"IHK-RESTORE-UI-001"},{_id:0,name:1,score:1})
-- Wiederholter Restore-Testzyklus IHK-RESTORE-UI-001 (pacman-dev, neu
-  angelegt und protokolliert): Jobs ihkui001-check-pre,
+- kubectl get pods -n monitoring
+- kubectl get secrets -n pacman-prod; kubectl get secret
+  mongodb-credentials -n pacman-prod -o jsonpath='{.data}' (nur
+  Schlüsselnamen ausgewertet, keine Werte dekodiert)
+- grep -rl secretKeyRef pacman-gitops
+- cat pacman-gitops/apps/pacman/base/secret.example.yaml (Inhalt
+  geprüft: nur Platzhalter)
+- git ls-files | grep -iE ".env|kubeconfig|.pem|id_rsa|secret"
+  (Hauptrepo, keine echte Secret-Datei gefunden)
+- kubectl get jobs -n pacman-dev --sort-by=.metadata.creationTimestamp
+- kubectl logs (erneut eingesehene, bereits abgeschlossene Jobs:
   mongodb-backup-ihkui001-final, ihkui001-delete-final,
-  ihkui001-verify-after-delete, mongodb-restore-ihkui001-final,
-  ihkui001-verify-after-restore sowie temporärer Prüf-Pod
-  ihkui001-verify-backup (alle nach Gebrauch entfernt, außer den
-  regulären Backup-/Restore-Jobs, die als Nachweis stehen bleiben)
-- 3 Screenshot-Dateien der Pacman-Highscore-Seite unter
+  mongodb-restore-ihkui001-final)
+- Gelesene Screenshot-Dateien:
   screenshots/18_backup_restore/IHK_RESTORE_UI_001_01_vor_loeschung.png,
-  ..._02_nach_loeschung.png, ..._03_nach_restore.png, Inhalt eingelesen
-  und geprüft, siehe Abschnitt 9g
-- Rebase und Push im Repository pacman-gitops: `git rebase origin/main`,
-  `git push origin main` (Commit 5a41e817bac9f292323f04fd4fea208611784146)
-- Prometheus-API (`GET /api/v1/targets`) und Alertmanager-API
-  (`GET /api/v2/status`, `GET /api/v2/alerts`) über Port-Forward
-  (Prometheus: bereits laufend; Alertmanager: temporär gestartet und
-  nach Prüfung wieder beendet)
-- kubectl get resourcequota -n pacman-dev
-- Eingesehene Projektdateien: apps/pacman/overlays/prod/kustomization.yaml,
-  textdateien/offene_punkte.txt, textdateien/backup_restore_nachweis.txt,
+  ..._02_nach_loeschung.png, ..._03_nach_restore.png
+- Eingesehene Projektdateien: textdateien/offene_punkte.txt,
+  textdateien/backup_restore_nachweis.txt,
   dokumentation/08_monitoring_backup_restore.docx
