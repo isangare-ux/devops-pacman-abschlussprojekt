@@ -1,6 +1,18 @@
-cd ..
 #!/usr/bin/env bash
+#
+# abschlussdokumentation_bereinigen.sh
+#
+# Löscht Sicherungsdateien (*.bak*, *_vor_*.docx) von
+# dokumentation/abschlussdokumentation.docx, nachdem geprüft wurde,
+# dass das Hauptdokument eine gültige, lesbare DOCX-Struktur besitzt.
+# Bei ungültigem Hauptdokument wird nichts gelöscht.
+#
+# Verwendung (aus dem Projektwurzelverzeichnis):
+#   ./scripts/abschlussdokumentation_bereinigen.sh
+#
 set -euo pipefail
+
+cd ..
 
 DIR="dokumentation"
 MAIN="$DIR/abschlussdokumentation.docx"

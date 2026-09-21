@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
-cd ..
+#
+# ap33_gitstand_dokumentation.sh
+#
+# Einmaliges AP33-Abschlussskript: ersetzt die verkürzte GitOps-Commit-
+# SHA durch die vollständige SHA in
+# dokumentation/10_uebergabe_und_betriebsanleitung.docx (mit Backup
+# zuvor), prüft die DOCX-Struktur und bestätigt anschließend, dass
+# beide finalen Commits (pacman-app, pacman-gitops) vollständig im
+# Dokument stehen.
+#
+# Verwendung (aus dem Projektwurzelverzeichnis):
+#   ./scripts/ap33_gitstand_dokumentation.sh
+#
 set -euo pipefail
+
+cd ..
 
 DOCX="dokumentation/10_uebergabe_und_betriebsanleitung.docx"
 

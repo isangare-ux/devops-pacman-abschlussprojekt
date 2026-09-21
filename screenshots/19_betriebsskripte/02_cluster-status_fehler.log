@@ -1,0 +1,3 @@
+FEHLER: Unbekannte Option: --bogus
+Verwende: ./scripts/cluster-status.sh --help
+exit=2

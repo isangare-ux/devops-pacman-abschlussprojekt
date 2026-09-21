@@ -1,0 +1,3 @@
+FEHLER: Unbekannter Parameter: --bogus
+Verwende: ./scripts/preflight-check.sh --help
+exit=2

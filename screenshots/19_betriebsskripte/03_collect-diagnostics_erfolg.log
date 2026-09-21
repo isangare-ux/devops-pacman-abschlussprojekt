@@ -1,0 +1,39 @@
+============================================================
+ PACMAN DIAGNOSTICS SAMMELN
+============================================================
+
+Zielordner: /tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648
+Namespaces: pacman-dev
+
+-> cluster-overview.txt
+-> argocd-applications.txt
+
+Namespace: pacman-dev
+  -> pacman-dev/resources.txt
+  -> pacman-dev/events.txt
+  -> pacman-dev/describe.txt
+  -> pacman-dev/logs/
+
+============================================================
+ DIAGNOSTICS GESAMMELT
+============================================================
+
+Ordner: /tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648
+
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/argocd-applications.txt
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/cluster-overview.txt
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/describe.txt
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/events.txt
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/backup-check-ihk-dev_backup-check.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-0_mongodb.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-0_mongodb_previous.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-backup-29830770-xbqt8_mongodb-backup.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-backup-29832210-lxx9q_mongodb-backup.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-backup-29833650-r6pct_mongodb-backup.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-restore-final-20260917-n8dvk_mongodb-restore.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-restore-ihk-ui-001-tl9bs_restore.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/mongodb-restore-ihkui001-final-np88g_mongodb-restore.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/pacman-86648c8b4-h62c6_pacman.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/logs/pacman-86648c8b4-h62c6_pacman_previous.log
+/tmp/claude-1000/-home-ibras-projects-devops-pacman-abschlussprojekt/a20632c2-5602-49ac-a587-d35f32776ae4/scratchpad/diag-evidence-test/20260921-233648/pacman-dev/resources.txt
+exit=0

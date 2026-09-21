@@ -1,0 +1,3 @@
+FEHLER: Unbekannte Option: --bogus
+Verwende: ./scripts/collect-diagnostics.sh --help
+exit=2
