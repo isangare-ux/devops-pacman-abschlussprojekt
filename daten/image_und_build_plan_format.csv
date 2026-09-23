@@ -1,0 +1,9 @@
+﻿Schritt,Aufgabe,Beschreibung,Status,Nachweis
+AP11-01,Dockerfile erstellen,Modernes Node.js Image mit fester Basisversion und Sicherheitsmaßnahmen,erledigt,Dockerfile
+AP11-02,.dockerignore erstellen,Ausschluss unnötiger Dateien und sensibler Informationen,erledigt,.dockerignore
+AP11-03,Dependencies installieren,Nutzung von package-lock.json und npm ci für reproduzierbare Builds,erledigt,package-lock.json
+AP11-04,Docker Image bauen,Erstellung des Pacman Images mit eindeutigem Tag pacman-app:v1.0,erledigt,docker build -t pacman-app:v1.0 .
+AP11-05,Container starten,Lokaler Funktionstest des Docker Containers,erledigt,docker run -d --name pacman-test -p 8080:8080 pacman-app:v1.0
+AP11-06,Image überprüfen,"Prüfung von Größe, Layer, Benutzer, Port und Startkommando",erledigt,"docker images, docker inspect"
+AP11-07,Smoke-Test durchführen,Prüfung der HTTP-Erreichbarkeit der Anwendung,erledigt,curl -I http://localhost:8080 → HTTP 200 OK
+AP11-08,Build-Nachweis dokumentieren,Zusammenfassung des Docker Builds und Testergebnisse,erledigt,textdateien/docker_build_nachweis.txt

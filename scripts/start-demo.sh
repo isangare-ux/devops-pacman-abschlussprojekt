@@ -109,16 +109,6 @@ require_command() {
     fi
 }
 
-require_cluster_reachable() {
-    if ! kubectl get nodes >/dev/null 2>&1; then
-        error "Kubernetes Cluster ist nicht erreichbar."
-        error "Bitte Docker Desktop starten und Kubernetes aktivieren, bevor die Demo gestartet wird."
-        error "Erwarteter Kontext: '$EXPECTED_CONTEXT'"
-        return 1
-    fi
-    return 0
-}
-
 require_namespace() {
     local namespace="$1"
     if ! kubectl get namespace "$namespace" >/dev/null 2>&1; then
@@ -139,12 +129,6 @@ require_service() {
 ensure_argocd() {
     local install_manifest="${ARGOCD_INSTALL_MANIFEST:-https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml}"
 
-    if ! require_cluster_reachable; then
-        error "Argo CD konnte nicht installiert werden, weil der Kubernetes-Cluster nicht erreichbar ist."
-        error "Manifest: $install_manifest"
-        return 1
-    fi
-
     if kubectl get namespace "$ARGOCD_NAMESPACE" >/dev/null 2>&1; then
         if kubectl get service "$ARGOCD_SERVICE" -n "$ARGOCD_NAMESPACE" >/dev/null 2>&1; then
             echo "OK: Argo CD ist bereits im Cluster verfügbar."
@@ -158,7 +142,6 @@ ensure_argocd() {
 
     if ! kubectl apply -n "$ARGOCD_NAMESPACE" -f "$install_manifest" >/dev/null 2>&1; then
         error "Argo CD konnte nicht installiert werden. Manifest: $install_manifest"
-        error "Prüfe Docker Desktop / Kubernetes-Kontext '$EXPECTED_CONTEXT' und den Cluster-Status."
         return 1
     fi
 
@@ -447,9 +430,13 @@ if [[ "$CURRENT_CONTEXT" != "$EXPECTED_CONTEXT" ]]; then
     exit 1
 fi
 
-require_cluster_reachable || exit 1
-
 ensure_argocd || exit 1
+
+if ! kubectl get nodes >/dev/null 2>&1; then
+    error "Kubernetes Cluster ist nicht erreichbar."
+    echo "Bitte Docker Desktop und Kubernetes prüfen."
+    exit 1
+fi
 
 echo "OK: Kubernetes ist erreichbar."
 echo "Kontext: $CURRENT_CONTEXT"
