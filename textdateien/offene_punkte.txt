@@ -680,3 +680,59 @@ Status:
 
 ENDE
 
+
+======================================================================
+Nachtrag: Finaler Git-/Image-Nachweis und Abgabe-Bereinigung (23./24.09.2026)
+======================================================================
+
+[ERLEDIGT] Finaler Git-Nachweis unmittelbar vor Abgabe
+
+pacman-app:
+  HEAD: 608d061b02fbf01e916d05de19aa6ef27f2db71e
+  (identisch mit origin/main, kein Drift)
+
+pacman-gitops:
+  HEAD: fa4ec17d0c565034db5add11188ef1be4c8ebc12
+  (identisch mit origin/main, kein Drift)
+
+devops-pacman-abschlussprojekt (Hauptrepo):
+  HEAD: d9ec2436606922303a97e3b34ad10786ecd9ce2c
+
+[ERLEDIGT] Finale Dev-/Prod-Image-Digests unmittelbar vor Abgabe
+
+DEV:
+  Tag: 076b02a16960878fb1f1365ad677016fb2399bee
+  Digest: sha256:f3da04a53e86376e0adb533c9e6d523b34c958ae23fd423da570e8b32da36b38
+
+PROD:
+  Tag: 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1
+  Digest: sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+
+Argo CD (Endzustand):
+  pacman-dev: Synced / Healthy
+  pacman-prod: Synced / Healthy
+
+[ERLEDIGT] Finale Bereinigung vor Abgabe
+
+- 4 lokale kubectl-port-forward-Prozesse (Prometheus, Grafana, Argo CD,
+  pacman-dev) beendet.
+- 2 temporaere, manuell erzeugte Test-Jobs aus pacman-prod entfernt
+  (manual-backup-restoretest-20260923182748,
+  mongodb-restore-prod-restoretest) - deren Nachweis ist bereits
+  vollstaendig in 08_monitoring_backup_restore.docx und diesem Nachtrag
+  gesichert.
+- 1 nicht mehr benoetigtes lokales Docker-Image entfernt
+  (ghcr.io/isangare-ux/pacman-app:b66076cf637e3fb4a3675064e4671cada37b2a1d,
+  Tag aus einer bereits revertierten Aenderung).
+- Keine offenen Test-Tokens oder temporaeren Secrets in pacman-dev/
+  pacman-prod vorgefunden (nur das regulaere mongodb-credentials-Secret
+  in beiden Namespaces).
+- Der historische Failed-Job mongodb-backup-29801970 (AP28 D09) wurde
+  bewusst NICHT entfernt, da er als dokumentierter Fehlerfall-Nachweis
+  dient.
+
+Status:
+  ABGESCHLOSSEN. Dies ist der finale, fuer die Abgabe massgebliche Stand.
+
+ENDE
+
