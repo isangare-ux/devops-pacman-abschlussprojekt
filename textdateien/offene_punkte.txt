@@ -569,7 +569,7 @@ Nachtrag: Prometheus-/Grafana-Primärnachweis (23.09.2026)
 [ERLEDIGT] Aktueller Grafana-Dashboard-Primärnachweis
 
 Screenshot:
-  screenshots/17_monitoring/AP24-22_grafana_finaler_uebersichtsnachweis_dev_prod.png
+  screenshots/17_monitoring/AP24-14_grafana_finaler_uebersichtsnachweis_dev_prod.png
 
 Dashboard: "Pacman Kubernetes Monitoring", Zeitraum "Last 15 minutes" (UTC),
 Live-Refresh 10s.
@@ -595,6 +595,88 @@ unter screenshots/17_monitoring/AP24-01 bis AP24-09.
 
 Status:
   ERLEDIGT fuer den Grafana-Dashboard-Teilnachweis.
+
+ENDE
+
+
+======================================================================
+Nachtrag: Vollstaendiger Restore-Endnachweis fuer pacman-prod (23./24.09.2026)
+======================================================================
+
+[ERLEDIGT] Praktischer End-to-End-Restore-Test in pacman-prod
+
+Analog zum bereits dokumentierten Testfall IHK-RESTORE-UI-001 in
+pacman-dev wurde derselbe Ablauf zusaetzlich in pacman-prod durchgefuehrt:
+eindeutiger Testdatensatz ueber die Anwendung anlegen, Backup nehmen,
+Datensatz kontrolliert loeschen, aus dem Backup restaurieren, Datensatz-
+und Anwendungsnachweis erbringen, danach den Testdatensatz final wieder
+entfernen. Vollstaendig dokumentiert in
+dokumentation/08_monitoring_backup_restore.docx, Abschnitt 11.2.
+
+Testdatensatz:
+  IHK-PROD-RESTORE-CLI-20260923-235940, Score 3141, Host manual-cli-test.
+  Ueber POST /highscores (Pacman-Webanwendung) angelegt, nicht direkt in
+  MongoDB erzeugt.
+
+Vergleichsdatensaetze (waehrend des gesamten Tests unveraendert):
+  IHK-RESTORE-TEST-001 (x2, Score 7777),
+  IHK-PROD-RESTORE-20260923-182742 (Score 1950).
+
+Backup:
+  Job manual-backup-cli-restoretest-20260923, Complete.
+  Datei /backup/pacman-cli-restoretest-20260923-215956.archive.gz.
+  SHA-256: bea55a5ad4a94d68e2b8b37fc8f6793bc3e79934dff57949ee332ca46298d79c
+  (im selben Job-Lauf per sha256sum erzeugt).
+  Backup-Log bestaetigte 4 Dokumente in pacman.highscore inkl. Testdatensatz.
+
+Loeschung:
+  Job manual-delete-cli-restoretest-20260923, deleteOne auf den
+  Testdatensatznamen.
+  Erster Anwendungsversuch schlug fehl: FailedCreate, da die
+  Standard-Requests (50m CPU/64Mi Memory) das in overlays/prod aktive
+  LimitRange-Minimum (100m CPU/128Mi) unterschreiten. Nach Korrektur auf
+  100m/128Mi: Complete, Job-Log bestaetigte deletedCount: 1.
+  Nachweis: /highscores/list zeigte danach keinen Treffer mehr fuer den
+  Testdatensatz; beide Vergleichsdatensaetze blieben unveraendert.
+
+Restore:
+  Job mongodb-restore-cli-restoretest-20260923, gleiches Verfahren wie in
+  pacman-dev (mongorestore --archive --gzip
+  --nsInclude="pacman.highscore" --drop).
+  Vor dem Restore zusaetzlich sha256sum -c gegen die Pruefsummendatei:
+  Ergebnis OK.
+  Job-Log bestaetigte: "4 document(s) restored successfully. 0
+  document(s) failed to restore."
+  Nachweis: /highscores/list zeigte den Testdatensatz (Score 3141) wieder
+  vorhanden; beide Vergleichsdatensaetze unveraendert.
+
+Anwendungsnachtest:
+  Alle drei Pacman-Prod-Replicas 1/1 Ready.
+  HTTP 200 auf Startseite und /highscores/list.
+
+Aufraeumen:
+  Testdatensatz final entfernt (Job manual-cleanup-cli-restoretest-20260923,
+  deletedCount: 1). Urspruenglicher Datenbestand in pacman-prod
+  unveraendert erhalten. Alle vier temporaeren Jobs (Backup, Loeschung,
+  Restore, Cleanup) aus dem Cluster geloescht.
+
+Nebenbefund:
+  Der erste Loesch-Versuch bestaetigte praktisch, dass die LimitRange-
+  Durchsetzung in overlays/prod tatsaechlich wirkt (FailedCreate bei
+  Unterschreitung des Minimums) - kein Fehler, sondern ein zusaetzlicher,
+  ungeplanter Funktionsnachweis fuer einen bereits dokumentierten
+  Mechanismus.
+
+Nachweisform:
+  CLI-basiert (kubectl-Job-Logs, HTTP-Abfragen ueber die Anwendung).
+  Keine grafischen Screenshots erzeugt, analog zum Muster des finalen
+  Betriebs-Snapshots (ERLEDIGT 03 oben).
+
+Status:
+  ERLEDIGT. Damit liegt fuer pacman-prod derselbe vollstaendige
+  Restore-Endnachweis vor wie fuer pacman-dev (Backup-Datei, SHA-256,
+  kontrollierte Loeschung, Restore-Job, Datenbank- und Anwendungs-
+  Nachtest).
 
 ENDE
 
