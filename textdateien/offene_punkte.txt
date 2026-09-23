@@ -561,3 +561,40 @@ ZIELZUSTAND:
 
 ENDE
 
+
+======================================================================
+Nachtrag: Prometheus-/Grafana-Primärnachweis (23.09.2026)
+======================================================================
+
+[ERLEDIGT] Aktueller Grafana-Dashboard-Primärnachweis
+
+Screenshot:
+  screenshots/17_monitoring/AP24-22_grafana_finaler_uebersichtsnachweis_dev_prod.png
+
+Dashboard: "Pacman Kubernetes Monitoring", Zeitraum "Last 15 minutes" (UTC),
+Live-Refresh 10s.
+
+Sichtbare Panels und Werte zum Erfassungszeitpunkt:
+- Replikate Soll/Verfuegbar Dev/Prod: Dev 1/1, Prod 3/3 (durchgehend flach).
+- Pacman CPU Usage Dev/Prod: Prod ca. 0,01-0,02 Kerne ueber den Zeitraum;
+  Dev nahe 0 mit Anstieg auf ca. 0,05 am aktuellen Rand.
+- Laufende Pacman-Container Dev/Prod: Dev 1, Prod 3 (durchgehend).
+- Pacman RAM-Auslastung zum Limit (%): Dev 44,7 %, Prod 15,9 %.
+- Pacman Replikat-Alert (Soll vs. Verfuegbar): konstant 1, kein Firing
+  sichtbar.
+- Pacman Dev - Skalierung & GitOps Self-Heal: konstant 1.
+
+Bewertung:
+Damit liegt ein aktueller, im Browser erfasster Primaernachweis vor, dass
+das Grafana-Dashboard erreichbar ist, echte Prometheus-Metriken fuer Dev
+und Prod anzeigt und sich die Werte plausibel zum sonstigen dokumentierten
+Betriebszustand verhalten (Dev 1 Replica, Prod 3 Replicas). Ein separater
+Prometheus-Targets-Screenshot (Targets/Status-Seite) wurde hierbei nicht
+zusaetzlich erfasst; bereits vorhandene Prometheus-Nachweise finden sich
+unter screenshots/17_monitoring/AP24-01 bis AP24-09.
+
+Status:
+  ERLEDIGT fuer den Grafana-Dashboard-Teilnachweis.
+
+ENDE
+
