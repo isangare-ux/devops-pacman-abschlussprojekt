@@ -139,6 +139,17 @@ Trivy-Security-Gate erfolgreich.
 HIGH/CRITICAL Findings mit verfügbarer Behebung hätten aufgrund
 exit-code: 1 den Release gestoppt.
 
+Hinweis (aktueller Stand): Der Trivy-Schritt in release.yml verwendet
+inzwischen exit-code: 0 statt exit-code: 1. Diese Umstellung erfolgte
+bewusst und auf Anraten des Bildungsträgers/Trainers, damit ein Release
+nicht durch aktuell nicht behebbare Findings im Basisimage dauerhaft
+blockiert wird. Der Scan selbst läuft weiterhin bei jedem Release und
+die Ergebnisse werden weiterhin protokolliert; er stoppt die Pipeline
+seither jedoch nicht mehr automatisch. Der oben beschriebene
+Gate-Nachweis (exit-code: 1) bezieht sich auf den zum damaligen
+Zeitpunkt dokumentierten Release-Lauf und ist als historischer Zustand
+weiterhin korrekt.
+
 SBOM:
 Im derzeit dokumentierten Release-Workflow nicht erzeugt.
 Dieser Sachverhalt wird transparent dokumentiert.
