@@ -1,21 +1,5 @@
+
 #!/usr/bin/env bash
-#
-# fix-pdb-prod-only.sh
-#
-# Einmalige, kontrollierte GitOps-Änderung: verschiebt pdb.yaml
-# (PodDisruptionBudget) aus der gemeinsamen Kustomize-Base in das
-# Prod-Overlay, sodass nur pacman-prod ein PDB erhält (Dev bleibt ohne).
-#
-# Voraussetzung: sauberer, mit origin/main synchroner Arbeitsstand auf
-# dem in EXPECTED_ORIGIN dokumentierten Commit. Das Skript prüft Git-
-# und Dateizustand, rendert Dev/Prod per Kustomize und führt einen
-# Client-Dry-Run durch, bevor es die Änderung vorbereitet.
-#
-# Führt selbst KEINEN commit, push oder kubectl apply aus.
-#
-# Verwendung (aus dem pacman-gitops-Repository):
-#   ./scripts/fix-pdb-prod-only.sh
-#
 set -euo pipefail
 
 BASE_DIR="apps/pacman/base"

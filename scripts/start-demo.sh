@@ -1,15 +1,5 @@
 #!/usr/bin/env bash
-#
-# start-demo.sh
-#
-# Prüft die Pacman-Umgebung (Kontext, Argo CD, Namespaces, Services,
-# Dev-/Prod-Replikate), startet die Port-Forwards für Pacman Dev/Prod,
-# Prometheus, Grafana und Argo CD und zeigt danach den Kubernetes-
-# Zustand live an. Führt kein kubectl apply/scale aus (siehe --help).
-#
-# Verwendung:
-#   ./scripts/start-demo.sh [--help]
-#
+
 set -Eeuo pipefail
 
 EXPECTED_CONTEXT="docker-desktop"
@@ -124,38 +114,6 @@ require_service() {
         error "Service '$service' im Namespace '$namespace' wurde nicht gefunden."
         return 1
     fi
-}
-
-ensure_argocd() {
-    local install_manifest="${ARGOCD_INSTALL_MANIFEST:-https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml}"
-
-    if kubectl get namespace "$ARGOCD_NAMESPACE" >/dev/null 2>&1; then
-        if kubectl get service "$ARGOCD_SERVICE" -n "$ARGOCD_NAMESPACE" >/dev/null 2>&1; then
-            echo "OK: Argo CD ist bereits im Cluster verfügbar."
-            return 0
-        fi
-    fi
-
-    echo "Argo CD wurde nicht gefunden. Starte Installation in Namespace '$ARGOCD_NAMESPACE'..."
-
-    kubectl create namespace "$ARGOCD_NAMESPACE" --dry-run=client -o yaml 2>/dev/null | kubectl apply -f - >/dev/null
-
-    if ! kubectl apply -n "$ARGOCD_NAMESPACE" -f "$install_manifest" >/dev/null 2>&1; then
-        error "Argo CD konnte nicht installiert werden. Manifest: $install_manifest"
-        return 1
-    fi
-
-    echo "Warte auf Argo CD Deployment..."
-    kubectl rollout status deployment/argocd-server -n "$ARGOCD_NAMESPACE" --timeout=300s >/dev/null 2>&1 || true
-    kubectl rollout status deployment/argocd-repo-server -n "$ARGOCD_NAMESPACE" --timeout=300s >/dev/null 2>&1 || true
-
-    if ! kubectl get service "$ARGOCD_SERVICE" -n "$ARGOCD_NAMESPACE" >/dev/null 2>&1; then
-        error "Argo CD wurde installiert, aber der Service '$ARGOCD_SERVICE' ist noch nicht verfügbar."
-        return 1
-    fi
-
-    echo "OK: Argo CD wurde installiert und ist verfügbar."
-    return 0
 }
 
 is_pid_running() {
@@ -429,8 +387,6 @@ if [[ "$CURRENT_CONTEXT" != "$EXPECTED_CONTEXT" ]]; then
     error "Erwarteter Kontext: '$EXPECTED_CONTEXT'"
     exit 1
 fi
-
-ensure_argocd || exit 1
 
 if ! kubectl get nodes >/dev/null 2>&1; then
     error "Kubernetes Cluster ist nicht erreichbar."

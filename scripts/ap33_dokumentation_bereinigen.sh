@@ -1,19 +1,6 @@
 #!/usr/bin/env bash
-#
-# ap33_dokumentation_bereinigen.sh
-#
-# Prüft, dass dokumentation/10_uebergabe_und_betriebsanleitung.docx
-# strukturell gültig ist und die dokumentierten AP33-Kerninhalte
-# (finale Commits, Digests, Argo-CD-Status, Betriebszustand) enthält,
-# und löscht erst danach die zugehörigen Sicherungsdateien
-# (*.bak*, *_vor_*.docx). Bricht ohne Löschung ab, falls ein Inhalt fehlt.
-#
-# Verwendung (aus dem Projektwurzelverzeichnis):
-#   ./scripts/ap33_dokumentation_bereinigen.sh
-#
-set -euo pipefail
-
 cd ..
+set -euo pipefail
 
 DIR="dokumentation"
 MAIN="$DIR/10_uebergabe_und_betriebsanleitung.docx"

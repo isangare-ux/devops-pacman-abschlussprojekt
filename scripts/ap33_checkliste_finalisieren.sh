@@ -1,19 +1,6 @@
-#!/usr/bin/env bash
-#
-# ap33_checkliste_finalisieren.sh
-#
-# Einmaliges AP33-Abschlussskript: ersetzt in
-# dokumentation/10_uebergabe_und_betriebsanleitung.docx die Platzhalter
-# "Vor Abgabe aktuell erfassen." für "Finale Repository-Commits" und
-# "Finale Image-Digests" durch die tatsächlich final dokumentierten
-# Commit-/Digest-Werte und prüft anschließend die DOCX-Struktur.
-#
-# Verwendung (aus dem Projektwurzelverzeichnis):
-#   ./scripts/ap33_checkliste_finalisieren.sh
-#
-set -euo pipefail
-
 cd ..
+#!/usr/bin/env bash
+set -euo pipefail
 
 DOCX="dokumentation/10_uebergabe_und_betriebsanleitung.docx"
 

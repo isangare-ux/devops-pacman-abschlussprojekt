@@ -1,19 +1,6 @@
 #!/usr/bin/env bash
-#
-# ap33_betriebszustand_dokumentieren.sh
-#
-# Einmaliges AP33-Abschlussskript: trägt den finalen, tatsächlich
-# gemessenen Betriebszustand (Commits, Image-Digests Dev/Prod) unter
-# dem Marker "AP33 – Finaler Betriebszustand und Live-Demo-Stand" in
-# dokumentation/10_uebergabe_und_betriebsanleitung.docx ein
-# (mit Backup zuvor) und prüft anschließend die DOCX-Struktur.
-#
-# Verwendung (aus dem Projektwurzelverzeichnis):
-#   ./scripts/ap33_betriebszustand_dokumentieren.sh
-#
-set -euo pipefail
-
 cd ..
+set -euo pipefail
 
 DOCX="dokumentation/10_uebergabe_und_betriebsanleitung.docx"
 
