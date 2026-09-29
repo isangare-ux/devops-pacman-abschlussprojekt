@@ -736,3 +736,47 @@ Status:
 
 ENDE
 
+======================================================================
+Nachtrag: Abgleich mit dem Workspace (29.09.2026)
+======================================================================
+
+Dieser Nachtrag aktualisiert die Bewertungen in Abschnitt 16 der
+dokumentation/abschlussdokumentation.docx. Der Nachtrag vom 23./24.09.2026
+bleibt als historische Momentaufnahme erhalten.
+
+Repository-Staende:
+- pacman-app: HEAD 608d061b02fbf01e916d05de19aa6ef27f2db71e;
+  main entspricht origin/main; Arbeitsbaum sauber.
+- pacman-gitops: HEAD fa4ec17d0c565034db5add11188ef1be4c8ebc12;
+  main entspricht origin/main; Arbeitsbaum sauber.
+- Hauptrepo: HEAD 6412c4ec29ce2f1bb482145eb8d99f05a567289a;
+  main entspricht origin/main, Arbeitsbaum jedoch nicht sauber.
+  Geloescht: scripts/demo-pacman-scaling-selfheal.sh,
+  scripts/test-pacman-replica-alert.sh.
+  Unversioniert: scripts/test-pacman-dev-replica-alert.sh,
+  scripts/test-pacman-drift.sh.
+Bewertung: Den finalen Abgabe-HEAD des Hauptrepos nach Klaerung dieser
+lokalen Aenderungen erneut erfassen. Die Aenderungen wurden nicht verworfen.
+
+Laufende Image-Digests am 29.09.2026:
+- Dev, Tag 076b02a16960878fb1f1365ad677016fb2399bee:
+  sha256:f3da04a53e86376e0adb533c9e6d523b34c958ae23fd423da570e8b32da36b38
+- Prod, Tag 2ae1f2e41c992fdbb81107aac79e66afe7ef2ea1:
+  sha256:8a30554bf682a9a326f1227ec0e3978eab03b982bbe41e0d13ab1aad21d379f6
+Die Tags und Digests wurden gegen die laufenden Pods geprueft; die drei
+Prod-Pods verwenden denselben Digest.
+
+Restore und T30:
+- Restore-Endnachweis B-IHK-RESTORE-UI-001 fuer pacman-dev vollstaendig:
+  SHA-256-Pruefung, Datenvergleich und UI-Belege. Kein Prod-Restore.
+- T30 am 26.08.2026 bestanden; Testprotokoll und Screenshot
+  screenshots/21_tests/T30_prod_abnahme_e2e_http200.png vorhanden.
+
+Weiterhin dokumentierte Einschraenkungen:
+- Single-Node Docker Desktop bietet keine echte Node-Hochverfuegbarkeit.
+- Legacy-Abhaengigkeiten benoetigen weiter Security-Scans und kontrollierte
+  Updates.
+- Eigene Pacman-App-Metriken bleiben Erweiterungspotenzial.
+
+ENDE NACHRAG 29.09.2026
+
